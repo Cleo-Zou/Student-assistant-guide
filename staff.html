@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff · Task Editor · IEMAKER LAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #09090b;
+    --surface: #111113;
+    --card: rgba(255,255,255,0.025);
+    --card-hover: rgba(255,255,255,0.045);
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.13);
+    --text: #fafafa;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #22c55e;
+    --warning: #eab308;
+    --danger: #ef4444;
+    --radius: 8px;
+    --radius-sm: 6px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Inter', 'Noto Sans TC', 'Noto Sans SC', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100dvh;
+    display: flex;
+    overflow: hidden;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Background glow layers ── */
+  .bg-grid {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 60% at 30% 50%, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 30% 50%, black 30%, transparent 70%);
+  }
+  .ambient-glow {
+    position: fixed;
+    left: 80px; top: 50%;
+    transform: translateY(-50%);
+    width: 700px; height: 500px;
+    background: radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    filter: blur(60px);
+  }
+  .edge-glow {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 100% 350px at 50% 0%,   rgba(59,130,246,0.2) 0%, transparent 40%),
+      radial-gradient(ellipse 100% 280px at 50% 100%, rgba(59,130,246,0.14) 0%, transparent 40%),
+      radial-gradient(ellipse 350px 100% at 0% 50%,   rgba(59,130,246,0.2) 0%, transparent 40%),
+      radial-gradient(ellipse 280px 100% at 100% 50%, rgba(59,130,246,0.14) 0%, transparent 40%);
+  }
+
+  /* ── Hover glow for interactive elements ── */
+  .item-entry, .sidebar-tab, .btn, .field-input, .field-select {
+    position: relative; isolation: isolate;
+  }
+  .item-entry::before, .sidebar-tab::before, .btn::before,
+  .field-input::before, .field-select::before {
+    content: '';
+    position: absolute; inset: -2px;
+    border-radius: inherit;
+    background: rgba(59,130,246,0);
+    filter: blur(8px);
+    z-index: -1;
+    transition: background 0.35s ease;
+  }
+  .item-entry:hover::before, .sidebar-tab:hover::before, .btn:hover::before,
+  .field-input:focus::before, .field-select:focus::before {
+    background: rgba(59,130,246,0.2);
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar {
+    position: relative; z-index: 1;
+    width: 300px; min-width: 300px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    height: 100dvh;
+  }
+  .sidebar-header {
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sidebar-header .back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+    text-decoration: none; letter-spacing: 0.04em;
+    transition: color 0.2s; display: inline-block; margin-bottom: 8px;
+  }
+  .sidebar-header .back:hover { color: var(--text); }
+  .sidebar-header h2 {
+    font-size: 16px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .sidebar-header .subtitle {
+    font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  }
+
+  .sidebar-tabs {
+    display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .sidebar-tab {
+    flex:1; padding: 10px 0; text-align: center;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all .15s; font-family: inherit;
+    background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .sidebar-tab:hover { color: var(--text); }
+  .sidebar-tab.active {
+    color: var(--accent); border-bottom-color: var(--accent);
+  }
+
+  .item-list {
+    flex:1; overflow-y: auto; padding: 8px;
+  }
+  .item-list::-webkit-scrollbar { width: 4px; }
+  .item-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+  .item-entry {
+    padding: 10px 12px; border-radius: 6px;
+    cursor: pointer; transition: all .12s;
+    margin-bottom: 2px; border: 1px solid transparent;
+  }
+  .item-entry:hover { background: var(--card-hover); }
+  .item-entry.active { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2); }
+  .item-entry .item-label {
+    font-size: 13px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .item-entry .item-meta {
+    font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  }
+  .item-entry .item-tag {
+    display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px;
+    margin-left: 6px; font-weight: 600; text-transform: uppercase;
+  }
+  .item-tag.print   { background: rgba(59,130,246,0.12); color: var(--accent); }
+  .item-tag.laser   { background: rgba(234,179,8,0.12);  color: var(--warning); }
+  .item-tag.general { background: rgba(161,161,170,0.12); color: var(--text-secondary); }
+  .item-tag.admin   { background: rgba(239,68,68,0.12);  color: var(--danger); }
+  .item-tag.inv     { background: rgba(34,197,94,0.12);  color: var(--success); }
+
+  .sidebar-footer {
+    padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0;
+    display: flex; gap: 8px;
+  }
+  .btn {
+    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border);
+    font-family: inherit; transition: all .15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-save {
+    flex:1; background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .btn-save:hover { background: var(--accent-hover); }
+  .btn-reset {
+    background: transparent; color: var(--text-muted);
+  }
+  .btn-reset:hover { background: rgba(255,255,255,0.04); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+
+  /* ── RIGHT EDITOR ── */
+  .editor {
+    position: relative; z-index: 1;
+    flex:1; display: flex; flex-direction: column; min-width: 0;
+    background: var(--bg);
+  }
+  .editor-header {
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+  }
+  .editor-header h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .editor-header .hint { font-size: 12px; color: var(--text-muted); }
+
+  .editor-body {
+    flex:1; overflow-y: auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .editor-body::-webkit-scrollbar { width: 5px; }
+  .editor-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+  .field-group {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .field-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .field-label .lang-badge {
+    font-size: 10px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.06); font-weight: 500;
+  }
+  .field-input {
+    width: 100%; padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-size: 14px; font-family: inherit;
+    transition: border-color .15s; outline: none;
+    letter-spacing: -0.01em;
+  }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--text-muted); }
+  textarea.field-input {
+    resize: vertical; min-height: 80px; line-height: 1.55;
+  }
+  .field-select {
+    width: 100%; padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-size: 14px; font-family: inherit;
+    cursor: pointer; outline: none;
+  }
+  .field-select:focus { border-color: var(--accent); }
+
+  .lang-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .empty-state {
+    flex:1; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-size: 14px;
+    text-align: center; line-height: 1.6;
+  }
+
+  .toast {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    background: #18181b; border: 1px solid var(--border);
+    color: var(--text); padding: 10px 22px; border-radius: 8px;
+    font-size: 13px; z-index: 100;
+    animation: fadeIn .2s ease, fadeOut .3s ease 1.5s forwards;
+    pointer-events: none;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px) translateX(-50%); } to { opacity:1; transform:translateY(0) translateX(-50%); } }
+  @keyframes fadeOut { to { opacity:0; transform:translateY(-6px) translateX(-50%); } }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="ambient-glow"></div>
+<div class="edge-glow"></div>
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <a href="index.html" class="back">&larr; IEMAKER LAB</a>
+    <h2>Staff Editor</h2>
+    <div class="subtitle">Edit tasks and guides for Student Assistants</div>
+  </div>
+  <div class="sidebar-tabs">
+    <button class="sidebar-tab active" onclick="switchTab('tasks')">Tasks</button>
+    <button class="sidebar-tab" onclick="switchTab('guides')">Guides</button>
+    <button class="sidebar-tab" onclick="switchTab('presets')">Presets</button>
+  </div>
+  <div class="item-list" id="itemList"></div>
+  <div class="sidebar-footer">
+    <button class="btn btn-save" onclick="saveAll()">Save All Changes</button>
+    <button class="btn btn-reset" onclick="resetAll()">Reset</button>
+  </div>
+</div>
+
+<!-- ── EDITOR ── -->
+<div class="editor" id="editor">
+  <div class="editor-header">
+    <h3 id="editorTitle">Select an item to edit</h3>
+    <span class="hint" id="editorHint"></span>
+  </div>
+  <div class="editor-body" id="editorBody">
+    <div class="empty-state">
+      Select a task, guide, or preset from the sidebar to edit.<br>
+      Changes are saved to browser storage.
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none;"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  DEFAULTS (mirror assistant.html)
+// ═══════════════════════════════════════
+const DEFAULT_TASKS = [
+  { id:"d1", tag:"print",   en:"Clean 3D Printer zone, remove waste, check desiccant beads, wash print plates", tc:"清潔 3D 打印區域：清除廢料、檢查除濕顆粒、清洗打印平台", sc:"清洁 3D 打印区域：清除废料、检查除湿颗粒、清洗打印平台" },
+  { id:"d2", tag:"laser",   en:"Clean laser machine workbed and waste materials", tc:"清潔激光機工作台及廢料", sc:"清洁激光机工作台及废料" },
+  { id:"d3", tag:"general", en:"Tidy up and clean workbenches", tc:"整理清潔工作台", sc:"整理清洁工作台" },
+  { id:"d4", tag:"general", en:"Organize tool cabinet and ensure tools are returned", tc:"整理工具櫃並確認工具歸位", sc:"整理工具柜并确认工具归位" },
+  { id:"d5", tag:"admin",   en:"Check Key Management System", tc:"檢查鑰匙管理系統", sc:"检查钥匙管理系统" },
+  { id:"d6", tag:"general", en:"Clean and reorganize display cabinet at WS03 corridor", tc:"清潔整理 WS03 走廊展示櫃", sc:"清洁整理 WS03 走廊展示柜" },
+  { id:"d7", tag:"general", en:"Organize Student Maker Corner and project displays", tc:"整理學生創客角落及項目展示", sc:"整理学生创客角落及项目展示" },
+  { id:"d8", tag:"inv",     en:"Check and refill component cabinet: screws, nuts, capacitors, etc.", tc:"檢查補充零件櫃（螺絲、螺母、電容等）", sc:"检查补充零件柜（螺丝、螺母、电容等）" },
+  { id:"d9", tag:"general", en:"Clean sink area, refill paper towels and soap", tc:"清潔洗手台區域並補充紙巾及洗手液", sc:"清洁洗手台区域并补充纸巾及洗手液" },
+  { id:"d10",tag:"general", en:"Charge batteries for vacuum, drill, screwdriver, etc.", tc:"為無線工具電池充電", sc:"为无线工具电池充电" },
+];
+
+const DEFAULT_GUIDE = {
+  "3dprint-assist": {
+    en:{title:"Assist Students with 3D Printing",body:"Help students level the print bed, load filament, start prints, and troubleshoot common issues."},
+    tc:{title:"協助同學使用 3D 打印機",body:"協助同學調平平台、裝載線材、啟動打印並排查常見問題。"},
+    sc:{title:"协助同学使用 3D 打印机",body:"协助同学调平平台、装载线材、启动打印并排查常见问题。"},
+    steps:[
+      {en:"Check and level the print bed",tc:"檢查打印平台是否平整 (bed leveling)",sc:"检查打印平台是否平整 (bed leveling)"},
+      {en:"Help load PLA / PETG filament",tc:"協助裝載 PLA / PETG 線材",sc:"协助装载 PLA / PETG 线材"},
+      {en:"Import STL, slice with correct settings, start print",tc:"導入 STL → 切片軟件設定參數 → 開始打印",sc:"导入 STL → 切片软件设定参数 → 开始打印"},
+      {en:"Monitor first layer adhesion, pause and adjust if needed",tc:"監控首層附著，必要時暫停調整",sc:"监控首层附着，必要时暂停调整"},
+    ],tag:"coming"
+  },
+  "3dprint-desiccant": {
+    en:{title:"Replace 3D Printer Desiccant Beads",body:"Check the desiccant beads in the filament dry box regularly. If they change color, replace or regenerate them."},
+    tc:{title:"更換 3D 打印機除濕顆粒",body:"定期檢查線材乾燥箱內的除濕顆粒。若顆粒變色，需要更換或再生。"},
+    sc:{title:"更换 3D 打印机除湿颗粒",body:"定期检查线材干燥箱内的除湿颗粒。若颗粒变色，需要更换或再生。"},
+    steps:[
+      {en:"Open the filament dry box",tc:"打開線材乾燥箱 / 乾燥盒",sc:"打开线材干燥箱 / 干燥盒"},
+      {en:"Check bead color (orange = OK, green = saturated)",tc:"檢查除濕顆粒顏色（橙色=正常，綠色=已吸濕）",sc:"检查除湿颗粒颜色（橙色=正常，绿色=已吸湿）"},
+      {en:"Remove saturated beads, pour in fresh desiccant",tc:"取出已變色的顆粒，倒入新的除濕顆粒",sc:"取出已变色的颗粒，倒入新的除湿颗粒"},
+      {en:"Old beads can be regenerated in microwave",tc:"舊顆粒可用微波爐加熱再生（視類型而定）",sc:"旧颗粒可用微波炉加热再生（视类型而定）"},
+      {en:"Close container tightly, ensure good seal",tc:"蓋緊乾燥盒，確認密封良好",sc:"盖紧干燥盒，确认密封良好"},
+    ],tag:"coming"
+  },
+  "3dprint-clean": {
+    en:{title:"Clean 3D Printer Zone",body:"Remove waste filament scraps and failed prints. Wash print plates. Wipe down printer surfaces and surrounding area."},
+    tc:{title:"清潔 3D 打印區域",body:"清除廢棄線材碎片和失敗的打印件。清洗打印平台。擦拭打印機表面和周圍區域。"},
+    sc:{title:"清洁 3D 打印区域",body:"清除废弃线材碎片和失败的打印件。清洗打印平台。擦拭打印机表面和周围区域。"},
+    steps:[
+      {en:"Remove all failed prints from bed",tc:"移除平台上所有廢棄打印件及支撐材料",sc:"移除平台上所有废弃打印件及支撑材料"},
+      {en:"Wash print plates with water or alcohol",tc:"用清水或酒精清洗打印平台",sc:"用清水或酒精清洗打印平台"},
+      {en:"Clean filament scraps from floor and table",tc:"清理地面及桌上的線材碎片",sc:"清理地面及桌上的线材碎片"},
+      {en:"Wipe printer exterior and surrounding area",tc:"擦拭打印機外殼、觸控屏及周圍區域",sc:"擦拭打印机外壳、触控屏及周围区域"},
+      {en:"Check desiccant bead status",tc:"檢查除濕顆粒狀態",sc:"检查除湿颗粒状态"},
+      {en:"Properly dispose of waste",tc:"妥善丟棄廢料（PLA 可回收處理）",sc:"妥善丢弃废料（PLA 可回收处理）"},
+    ],tag:"daily"
+  },
+  "laser-assist": {
+    en:{title:"Assist Students with Laser Cutting",body:"Help students set up material, adjust focus, configure power/speed in LightBurn, and monitor cuts."},
+    tc:{title:"協助同學使用激光切割機",body:"協助同學放置材料、調整焦距、在 LightBurn 中配置功率/速度參數並監控切割過程。務必檢查排煙系統是否運行。"},
+    sc:{title:"协助同学使用激光切割机",body:"协助同学放置材料、调整焦距、在 LightBurn 中配置功率/速度参数并监控切割过程。务必检查排烟系统是否运行。"},
+    steps:[
+      {en:"Ensure fume extractor is on",tc:"確認排煙系統已開啟並正常運行",sc:"确认排烟系统已开启并正常运行"},
+      {en:"Help position material and adjust focus",tc:"協助放置材料並調整激光頭焦距",sc:"协助放置材料并调整激光头焦距"},
+      {en:"Configure power/speed/passes in LightBurn",tc:"在 LightBurn 設定功率 / 速度 / 次數",sc:"在 LightBurn 设定功率 / 速度 / 次数"},
+      {en:"Start job and monitor throughout",tc:"啟動切割並全程監控（不可離開）",sc:"启动切割并全程监控（不可离开）"},
+      {en:"Wait for smoke to clear before opening lid",tc:"完成後等待煙霧排清再打開蓋子",sc:"完成后等待烟雾排清再打开盖子"},
+    ],tag:"coming"
+  },
+  "laser-clean": {
+    en:{title:"Clean Laser Machine and Waste",body:"Clean the honeycomb bed, remove debris, empty the scrap bin, wipe the lens cover gently."},
+    tc:{title:"清潔激光機及廢料",body:"清潔蜂窩平台、移除碎片、清空廢料收集盤、輕輕擦拭鏡頭蓋、確保通風正常。"},
+    sc:{title:"清洁激光机及废料",body:"清洁蜂窝平台、移除碎片、清空废料收集盘、轻轻擦拭镜头盖、确保通风正常。"},
+    steps:[
+      {en:"Turn off laser, wait to cool",tc:"關閉激光機電源，等待冷卻",sc:"关闭激光机电源，等待冷却"},
+      {en:"Empty scrap bin under honeycomb bed",tc:"清空蜂窩平台下方的廢料收集盤",sc:"清空蜂窝平台下方的废料收集盘"},
+      {en:"Clean debris from honeycomb bed",tc:"用刷子或吸塵器清理蜂窩平台上的碎片",sc:"用刷子或吸尘器清理蜂窝平台上的碎片"},
+      {en:"Gently wipe lens cover with lens tissue",tc:"用鏡頭紙輕輕擦拭鏡頭蓋（勿用普通紙巾）",sc:"用镜头纸轻轻擦拭镜头盖（勿用普通纸巾）"},
+      {en:"Wipe machine exterior",tc:"擦拭機器外部及周圍工作區域",sc:"擦拭机器外部及周围工作区域"},
+      {en:"Check exhaust duct is clear",tc:"檢查排煙管道是否暢通",sc:"检查排烟管道是否畅通"},
+    ],tag:"daily"
+  },
+  "3dprint-overview": {
+    en:{title:"3D Printer Duties",body:"3 main duties for Student Assistants. Tap any card below for details."},
+    tc:{title:"3D 打印機職責",body:"學生助理的 3 項主要職責，點擊下方卡片查看詳情。"},
+    sc:{title:"3D 打印机职责",body:"学生助理的 3 项主要职责，点击下方卡片查看详情。"},
+    links:["3dprint-assist","3dprint-desiccant","3dprint-clean"]
+  },
+  "laser-overview": {
+    en:{title:"Laser Cutter Duties",body:"2 main duties for Student Assistants. Tap any card below for details."},
+    tc:{title:"激光切割機職責",body:"學生助理的 2 項主要職責，點擊下方卡片查看詳情。"},
+    sc:{title:"激光切割机职责",body:"学生助理的 2 项主要职责，点击下方卡片查看详情。"},
+    links:["laser-assist","laser-clean"]
+  },
+  "training": {
+    en:{title:"Self-Training Opportunities",body:"Explore these machines during your shift. Self-training materials available."},
+    tc:{title:"自學培訓機會",body:"在值班期間探索這些機器。自學培訓材料可供查閱。"},
+    sc:{title:"自学培训机会",body:"在值班期间探索这些机器。自学培训材料可供查阅。"},
+    equipment:[
+      {en:"3D Printer",tc:"3D 打印機",sc:"3D 打印机",q:"3dprint-assist"},
+      {en:"3D Scanner",tc:"3D 掃描儀",sc:"3D 扫描仪",q:"training"},
+      {en:"Laser Cutter",tc:"激光切割機",sc:"激光切割机",q:"laser-assist"},
+      {en:"UV Printer",tc:"UV 打印機",sc:"UV 打印机",q:"training"},
+      {en:"Vacuum Forming",tc:"真空成型機",sc:"真空成型机",q:"training"},
+      {en:"Wire Cut Machine",tc:"線切割機",sc:"线切割机",q:"training"},
+      {en:"CNC Router",tc:"CNC 雕刻機",sc:"CNC 雕刻机",q:"training"},
+      {en:"Vinyl Cutter",tc:"乙烯基切割機",sc:"乙烯基切割机",q:"training"},
+      {en:"Photo Studio",tc:"攝影工作室",sc:"摄影工作室",q:"training"},
+    ]
+  },
+};
+
+const DEFAULT_PRESETS = {
+  all:[
+    {en:"3D Printer",tc:"3D 打印機",sc:"3D 打印机",q:"3dprint-overview"},
+    {en:"Clean Printer Zone",tc:"清潔打印區",sc:"清洁打印区",q:"3dprint-clean"},
+    {en:"Replace Desiccant",tc:"更換除濕顆粒",sc:"更换除湿颗粒",q:"3dprint-desiccant"},
+    {en:"Laser Cutter",tc:"激光切割機",sc:"激光切割机",q:"laser-overview"},
+    {en:"Clean Laser",tc:"清潔激光機",sc:"清洁激光机",q:"laser-clean"},
+    {en:"Self-Training",tc:"自學培訓",sc:"自学培训",q:"training"},
+  ],
+  "3dprint":[
+    {en:"3D Printer Overview",tc:"3D 打印機總覽",sc:"3D 打印机总览",q:"3dprint-overview"},
+    {en:"Assist Students",tc:"協助同學使用",sc:"协助同学使用",q:"3dprint-assist"},
+    {en:"Replace Desiccant",tc:"更換除濕顆粒",sc:"更换除湿颗粒",q:"3dprint-desiccant"},
+    {en:"Clean Printer Zone",tc:"清潔打印區",sc:"清洁打印区",q:"3dprint-clean"},
+  ],
+  laser:[
+    {en:"Laser Overview",tc:"激光機總覽",sc:"激光机总览",q:"laser-overview"},
+    {en:"Assist Students",tc:"協助同學使用",sc:"协助同学使用",q:"laser-assist"},
+    {en:"Clean Laser",tc:"清潔激光機",sc:"清洁激光机",q:"laser-clean"},
+  ],
+  training:[
+    {en:"Training Overview",tc:"培訓總覽",sc:"培训总览",q:"training"},
+    {en:"Learn 3D Printer",tc:"學 3D Printer",sc:"学 3D Printer",q:"3dprint-assist"},
+    {en:"Learn Laser Cutter",tc:"學 Laser Cutter",sc:"学 Laser Cutter",q:"laser-assist"},
+    {en:"Learn 3D Scanner",tc:"學 3D Scanner",sc:"学 3D Scanner",q:"training"},
+  ],
+};
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let currentTab = 'tasks';
+let selectedKey = null;
+let editedData = loadData();
+
+function loadData() {
+  return {
+    tasks: loadFromStorage('maker_lab_staff_tasks', DEFAULT_TASKS),
+    guide: loadFromStorage('maker_lab_staff_guide', DEFAULT_GUIDE),
+    presets: loadFromStorage('maker_lab_staff_presets', DEFAULT_PRESETS),
+  };
+}
+
+function loadFromStorage(key, fallback) {
+  try { const v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch(e) {}
+  return JSON.parse(JSON.stringify(fallback)); // deep clone
+}
+
+// ═══════════════════════════════════════
+//  RENDER SIDEBAR
+// ═══════════════════════════════════════
+function renderItemList() {
+  const el = document.getElementById('itemList');
+  let html = '';
+
+  if (currentTab === 'tasks') {
+    html = editedData.tasks.map((t, i) => `
+      <div class="item-entry${selectedKey === t.id ? ' active' : ''}" onclick="selectTask('${t.id}')">
+        <div class="item-label">${escHtml(t.en || t.id)} <span class="item-tag ${t.tag}">${t.tag}</span></div>
+        <div class="item-meta">${escHtml((t.tc || '').substring(0, 40))}${(t.tc||'').length > 40 ? '...' : ''}</div>
+      </div>
+    `).join('');
+  } else if (currentTab === 'guides') {
+    html = Object.entries(editedData.guide).map(([k, g]) => `
+      <div class="item-entry${selectedKey === k ? ' active' : ''}" onclick="selectGuide('${k}')">
+        <div class="item-label">${escHtml((g.en?.title || k))}</div>
+        <div class="item-meta">${k}${g.tag ? ' · '+g.tag : ''}</div>
+      </div>
+    `).join('');
+  } else if (currentTab === 'presets') {
+    html = Object.entries(editedData.presets).map(([cat, items]) => `
+      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">${cat}</div>
+      ${items.map((p, i) => {
+        const key = `${cat}_${i}`;
+        return `
+        <div class="item-entry${selectedKey === key ? ' active' : ''}" onclick="selectPreset('${cat}', ${i})">
+          <div class="item-label">${escHtml(p.en || '(empty)')}</div>
+          <div class="item-meta">→ ${p.q}</div>
+        </div>`;
+      }).join('')}
+    `).join('');
+  }
+
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+//  RENDER EDITOR
+// ═══════════════════════════════════════
+function selectTask(id) {
+  selectedKey = id;
+  const t = editedData.tasks.find(x => x.id === id);
+  if (!t) return;
+  renderItemList();
+  document.getElementById('editorTitle').textContent = 'Edit Task';
+  document.getElementById('editorHint').textContent = 'ID: ' + id;
+
+  const body = document.getElementById('editorBody');
+  body.innerHTML = `
+    <div class="field-group">
+      <div class="field-label">Tag / Category</div>
+      <select class="field-select" onchange="updateTaskField('${id}','tag',this.value)">
+        ${['print','laser','general','admin','inv'].map(v => `<option value="${v}" ${t.tag===v?'selected':''}>${v.toUpperCase()}</option>`).join('')}
+      </select>
+    </div>
+    <div class="lang-grid">
+      ${['en','tc','sc'].map(lang => {
+        const badge = {en:'English',tc:'繁體中文',sc:'简体中文'}[lang];
+        const ph = {en:'Task title in English',tc:'繁體中文任務名稱',sc:'简体中文任务名称'}[lang];
+        return `<div class="field-group">
+          <div class="field-label"><span class="lang-badge">${badge}</span></div>
+          <textarea class="field-input" onchange="updateTaskField('${id}','${lang}',this.value)" placeholder="${ph}">${escHtml(t[lang]||'')}</textarea>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="field-group" style="margin-top:8px;">
+      <div class="field-label">Danger Zone</div>
+      <button class="btn btn-reset" onclick="deleteTask('${id}')" style="align-self:flex-start;">Delete This Task</button>
+    </div>
+  `;
+}
+
+function selectGuide(key) {
+  selectedKey = key;
+  const g = editedData.guide[key];
+  if (!g) return;
+  renderItemList();
+  document.getElementById('editorTitle').textContent = 'Edit Guide';
+  document.getElementById('editorHint').textContent = 'Key: ' + key;
+
+  const hasSteps = !!g.steps;
+  const stepsHtml = hasSteps ? `
+    <div class="field-group" style="margin-top:8px;">
+      <div class="field-label">Steps (${g.steps.length} steps)</div>
+      ${g.steps.map((s, i) => `
+        <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;">
+          <span style="color:var(--accent);font-weight:700;min-width:20px;">${i+1}</span>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+            <input class="field-input" value="${escAttr(s.en||'')}" onchange="updateGuideStep('${key}',${i},'en',this.value)" placeholder="EN step" style="font-size:12px;">
+            <input class="field-input" value="${escAttr(s.tc||'')}" onchange="updateGuideStep('${key}',${i},'tc',this.value)" placeholder="TC step" style="font-size:12px;">
+            <input class="field-input" value="${escAttr(s.sc||'')}" onchange="updateGuideStep('${key}',${i},'sc',this.value)" placeholder="SC step" style="font-size:12px;">
+          </div>
+          <button class="btn btn-reset" onclick="deleteGuideStep('${key}',${i})" style="padding:4px 8px;font-size:10px;">X</button>
+        </div>
+      `).join('')}
+      <button class="btn" onclick="addGuideStep('${key}')" style="align-self:flex-start;margin-top:8px;">+ Add Step</button>
+    </div>
+  ` : '';
+
+  const tagSelect = g.tag !== undefined ? `
+    <div class="field-group">
+      <div class="field-label">Tag Type</div>
+      <select class="field-select" onchange="updateGuideField('${key}','tag',this.value)">
+        <option value="coming" ${g.tag==='coming'?'selected':''}>Coming Soon</option>
+        <option value="daily" ${g.tag==='daily'?'selected':''}>Daily</option>
+        <option value="" ${!g.tag?'selected':''}>None</option>
+      </select>
+    </div>
+  ` : '';
+
+  const body = document.getElementById('editorBody');
+  body.innerHTML = `
+    <div class="lang-grid">
+      ${['en','tc','sc'].map(lang => {
+        const badge = {en:'English',tc:'繁體中文',sc:'简体中文'}[lang];
+        return `<div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="field-group">
+            <div class="field-label"><span class="lang-badge">${badge}</span> Title</div>
+            <input class="field-input" value="${escAttr(g[lang]?.title||'')}" onchange="updateGuideField('${key}','${lang}','title',this.value)" placeholder="Title">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Body</div>
+            <textarea class="field-input" onchange="updateGuideField('${key}','${lang}','body',this.value)" placeholder="Description text">${escHtml(g[lang]?.body||'')}</textarea>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${tagSelect}
+    ${stepsHtml}
+  `;
+}
+
+function selectPreset(cat, idx) {
+  selectedKey = `${cat}_${idx}`;
+  const p = editedData.presets[cat]?.[idx];
+  if (!p) return;
+  renderItemList();
+  document.getElementById('editorTitle').textContent = 'Edit Preset';
+  document.getElementById('editorHint').textContent = `Category: ${cat} · Index: ${idx}`;
+
+  const body = document.getElementById('editorBody');
+  body.innerHTML = `
+    <div class="field-group">
+      <div class="field-label">Query Key</div>
+      <input class="field-input" value="${escAttr(p.q||'')}" onchange="updatePresetField('${cat}',${idx},'q',this.value)" placeholder="e.g. 3dprint-overview">
+    </div>
+    <div class="lang-grid">
+      ${['en','tc','sc'].map(lang => {
+        const badge = {en:'English',tc:'繁體中文',sc:'简体中文'}[lang];
+        return `<div class="field-group">
+          <div class="field-label"><span class="lang-badge">${badge}</span></div>
+          <input class="field-input" value="${escAttr(p[lang]||'')}" onchange="updatePresetField('${cat}',${idx},'${lang}',this.value)" placeholder="Button text">
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="field-group" style="margin-top:8px;">
+      <button class="btn btn-reset" onclick="deletePreset('${cat}',${idx})" style="align-self:flex-start;">Delete This Preset</button>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════
+//  UPDATE FUNCTIONS
+// ═══════════════════════════════════════
+function updateTaskField(id, field, value) {
+  const t = editedData.tasks.find(x => x.id === id);
+  if (t) { t[field] = value; renderItemList(); }
+}
+function deleteTask(id) {
+  if (!confirm('Delete this task? This cannot be undone.')) return;
+  editedData.tasks = editedData.tasks.filter(x => x.id !== id);
+  selectedKey = null; renderItemList();
+  document.getElementById('editorBody').innerHTML = '<div class="empty-state">Task deleted. Select another item.</div>';
+}
+
+function updateGuideField(key, lang, field, value) {
+  const g = editedData.guide[key];
+  if (g) {
+    if (!g[lang]) g[lang] = {};
+    g[lang][field] = value;
+    renderItemList();
+  }
+}
+function updateGuideStep(key, idx, lang, value) {
+  const g = editedData.guide[key];
+  if (g?.steps?.[idx]) { g.steps[idx][lang] = value; }
+}
+function deleteGuideStep(key, idx) {
+  const g = editedData.guide[key];
+  if (g?.steps) { g.steps.splice(idx, 1); selectGuide(key); }
+}
+function addGuideStep(key) {
+  const g = editedData.guide[key];
+  if (g) {
+    if (!g.steps) g.steps = [];
+    g.steps.push({en:'',tc:'',sc:''});
+    selectGuide(key);
+  }
+}
+
+function updatePresetField(cat, idx, field, value) {
+  const p = editedData.presets[cat]?.[idx];
+  if (p) { p[field] = value; renderItemList(); }
+}
+function deletePreset(cat, idx) {
+  if (!confirm('Delete this preset?')) return;
+  editedData.presets[cat].splice(idx, 1);
+  selectedKey = null; renderItemList();
+  document.getElementById('editorBody').innerHTML = '<div class="empty-state">Preset deleted. Select another item.</div>';
+}
+
+// ═══════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════
+function switchTab(tab) {
+  currentTab = tab; selectedKey = null;
+  document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.sidebar-tab[onclick*="${tab}"]`)?.classList.add('active');
+  document.getElementById('editorTitle').textContent = 'Select an item to edit';
+  document.getElementById('editorHint').textContent = '';
+  document.getElementById('editorBody').innerHTML = '<div class="empty-state">Select a task, guide, or preset from the sidebar to edit.</div>';
+  renderItemList();
+}
+
+// ═══════════════════════════════════════
+//  SAVE / RESET
+// ═══════════════════════════════════════
+function saveAll() {
+  try {
+    localStorage.setItem('maker_lab_staff_tasks', JSON.stringify(editedData.tasks));
+    localStorage.setItem('maker_lab_staff_guide', JSON.stringify(editedData.guide));
+    localStorage.setItem('maker_lab_staff_presets', JSON.stringify(editedData.presets));
+    showToast('All changes saved. Student Assistants will see the updated content.');
+  } catch(e) {
+    showToast('Error saving. Please try again.');
+  }
+}
+
+function resetAll() {
+  if (!confirm('Reset ALL tasks, guides, and presets to defaults? This cannot be undone.')) return;
+  editedData.tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  editedData.guide = JSON.parse(JSON.stringify(DEFAULT_GUIDE));
+  editedData.presets = JSON.parse(JSON.stringify(DEFAULT_PRESETS));
+  selectedKey = null;
+  renderItemList();
+  document.getElementById('editorBody').innerHTML = '<div class="empty-state">All data reset to defaults. Click Save to apply.</div>';
+  showToast('Reset to defaults. Click "Save All Changes" to apply.');
+}
+
+// ═══════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════
+function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escAttr(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg; toast.style.display = 'block';
+  toast.style.animation = 'none'; toast.offsetHeight;
+  toast.style.animation = 'fadeIn .2s ease, fadeOut .3s ease 1.8s forwards';
+  setTimeout(() => { toast.style.display = 'none'; }, 2100);
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveAll(); }
+});
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+renderItemList();
+</script>
+</body>
+</html>
