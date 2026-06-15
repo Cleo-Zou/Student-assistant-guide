@@ -128,6 +128,26 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
+  .reset-btn {
+    margin-top: 10px;
+    padding: 4px 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+  .reset-btn:hover {
+    color: var(--danger);
+    border-color: rgba(239,68,68,0.3);
+    background: rgba(239,68,68,0.06);
+  }
   .left-scroll {
     flex: 1;
     overflow-y: auto;
@@ -192,12 +212,13 @@
     transition: all .15s;
     color: transparent;
   }
+  .cl-title { font-weight: 600; }
   .cl-item.done .cl-check {
     background: var(--success);
     border-color: var(--success);
     color: #fff;
   }
-  .cl-item.done .cl-text { color: var(--text-muted); text-decoration: line-through; }
+  .cl-item.done .cl-title { color: var(--text-muted); text-decoration: line-through; }
   .cl-tag {
     display: inline-block;
     font-size: 10px;
@@ -602,6 +623,99 @@
     margin-top: 10px; text-align: center;
   }
 
+  /* Name signoff modal */
+  .name-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .name-modal-overlay.hidden { display: none; }
+  .name-modal {
+    background: #18181b;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 28px 30px;
+    min-width: 340px;
+    max-width: 400px;
+    font-family: 'Manrope', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+  }
+  .name-modal h4 {
+    font-size: 15px; font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .name-modal .task-preview {
+    font-size: 13px; color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .name-modal input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 14px;
+  }
+  .name-modal input:focus { border-color: var(--accent); }
+  .name-modal input::placeholder { color: var(--text-muted); }
+  .name-modal .modal-actions {
+    display: flex; gap: 8px;
+  }
+  .name-modal .btn-confirm {
+    flex: 1;
+    padding: 9px 0;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .name-modal .btn-confirm:hover { background: var(--accent-hover); }
+  .name-modal .btn-cancel {
+    flex: 1;
+    padding: 9px 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .name-modal .btn-cancel:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+  /* Signoff names under task */
+  .cl-signoffs {
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .cl-signoff-chip {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    background: rgba(34,197,94,0.12);
+    color: var(--success);
+    font-weight: 500;
+  }
+
   /* Toast */
   .toast {
     position: fixed; bottom: 100px; left: 50%;
@@ -695,6 +809,7 @@
   <div class="left-header">
     <div class="title" data-i18n="leftTitle">DAILY TASKS</div>
     <div class="subtitle" data-i18n="leftSubtitle">Student Checklist</div>
+    <button class="reset-btn" onclick="resetSignoffs()" data-i18n="resetBtn">Clear All</button>
   </div>
   <div class="left-scroll" id="leftScroll"></div>
   <div class="left-footer" data-i18n="leftFooter">Tap to check off</div>
@@ -747,6 +862,18 @@
   </div>
 </div>
 
+<div id="nameModal" class="name-modal-overlay hidden">
+  <div class="name-modal" onclick="event.stopPropagation()">
+    <h4 data-i18n="signoffTitle">Task Check-in</h4>
+    <div class="task-preview" id="signoffTaskPreview"></div>
+    <input type="text" id="signoffNameInput" data-i18n-placeholder="signoffPlaceholder" placeholder="Enter your name" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSignoff()" data-i18n="signoffCancel">Cancel</button>
+      <button class="btn-confirm" onclick="confirmSignoff()" data-i18n="signoffConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast" style="display:none;"></div>
 
 <script>
@@ -768,6 +895,8 @@ const I18N = {
     toastThanks:'Thanks for your feedback!', toastImprove:"We'll keep improving!",
     clearConfirm:'Clear all conversations?',
     fallbackTitle:'No matching guide found', fallbackTry:'Try these', fallbackHint:'You can also ask the lab supervisor',
+    signoffTitle:'Task Check-in', signoffPlaceholder:'Enter your name', signoffCancel:'Cancel', signoffConfirm:'Confirm',
+    resetBtn:'Clear All', resetConfirm:'Clear all check-ins for today?', resetToast:'All tasks cleared!',
   },
   tc: {
     leftTitle:'日常任務', leftSubtitle:'學生助理檢查清單', leftFooter:'點擊勾選完成',
@@ -783,6 +912,8 @@ const I18N = {
     toastThanks:'感謝你的回饋！', toastImprove:'我們會持續改進！',
     clearConfirm:'確定清除所有對話記錄？',
     fallbackTitle:'沒有找到相關指引', fallbackTry:'試試這些', fallbackHint:'也可向實驗室主管查詢',
+    signoffTitle:'任務簽到', signoffPlaceholder:'輸入你的姓名', signoffCancel:'取消', signoffConfirm:'確認',
+    resetBtn:'全部清除', resetConfirm:'確定清除今日所有簽到記錄？', resetToast:'所有任務已清除！',
   },
   sc: {
     leftTitle:'日常任务', leftSubtitle:'学生助理检查清单', leftFooter:'点击勾选完成',
@@ -798,6 +929,8 @@ const I18N = {
     toastThanks:'感谢你的反馈！', toastImprove:'我们会持续改进！',
     clearConfirm:'确定清除所有对话记录？',
     fallbackTitle:'没有找到相关指引', fallbackTry:'试试这些', fallbackHint:'也可向实验室主管查询',
+    signoffTitle:'任务签到', signoffPlaceholder:'输入你的姓名', signoffCancel:'取消', signoffConfirm:'确认',
+    resetBtn:'全部清除', resetConfirm:'确定清除今日所有签到记录？', resetToast:'所有任务已清除！',
   }
 };
 
@@ -1032,36 +1165,122 @@ function renderLeftPanel() {
   leftScroll.innerHTML = html;
 }
 
+// ── SIGNOFF DATA ──
+let signoffs = loadSignoffs();
+
+function loadSignoffs() {
+  try {
+    const v = localStorage.getItem('maker_lab_signoffs');
+    if (v) return JSON.parse(v);
+  } catch(e) {}
+  return {};
+}
+function saveSignoffs() {
+  try { localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs)); } catch(e) {}
+}
+
+function getSignoffs(taskId) {
+  return signoffs[taskId] || [];
+}
+
 function renderClItem(t) {
   const title = t[currentLang] || t.en || '';
+  const names = getSignoffs(t.id);
+  const isDone = names.length > 0;
+  const namesHtml = names.length > 0
+    ? `<div class="cl-signoffs">${names.map(n => `<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>`
+    : '';
+
   return `
-    <div class="cl-item" id="left-${t.id}" onclick="toggleLeftCheck('${t.id}')">
-      <div class="cl-check"></div>
+    <div class="cl-item${isDone ? ' done' : ''}" id="left-${t.id}" onclick="openSignoff('${t.id}')">
+      <div class="cl-check">${isDone ? '&#10003;' : ''}</div>
       <div class="cl-text">
-        <div style="font-weight:600;">${escapeHtml(title)}</div>
+        <div class="cl-title">${escapeHtml(title)}</div>
+        ${namesHtml}
         <span class="cl-tag ${t.tag}">${t.tag.toUpperCase()}</span>
       </div>
     </div>`;
 }
 
-function toggleLeftCheck(id) {
+// ── SIGNOFF MODAL ──
+let pendingSignoffTaskId = null;
+
+function openSignoff(id) {
+  pendingSignoffTaskId = id;
+  const t = DAILY_TASKS.find(x => x.id === id);
+  const title = t ? (t[currentLang] || t.en || '') : '';
+  document.getElementById('signoffTaskPreview').textContent = title;
+  document.getElementById('signoffNameInput').value = '';
+  document.getElementById('nameModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('signoffNameInput').focus(), 100);
+}
+
+function closeSignoff() {
+  document.getElementById('nameModal').classList.add('hidden');
+  pendingSignoffTaskId = null;
+}
+
+function confirmSignoff() {
+  const name = document.getElementById('signoffNameInput').value.trim();
+  if (!name) { showToast('Please enter your name'); return; }
+  const id = pendingSignoffTaskId;
+  if (!id) return;
+
+  if (!signoffs[id]) signoffs[id] = [];
+  signoffs[id].push({ name: name, time: new Date().toISOString() });
+  saveSignoffs();
+
+  // Update the specific task item
   const el = document.getElementById('left-' + id);
-  if (!el) return;
-  el.classList.toggle('done');
-  saveLeftChecks();
+  if (el) {
+    el.classList.add('done');
+    const checkEl = el.querySelector('.cl-check');
+    if (checkEl) checkEl.innerHTML = '&#10003;';
+    // Update signoff chips
+    const textEl = el.querySelector('.cl-text');
+    if (textEl) {
+      const existingChips = textEl.querySelector('.cl-signoffs');
+      if (existingChips) existingChips.remove();
+      const names = getSignoffs(id);
+      const chipsHtml = `<div class="cl-signoffs">${names.map(n => `<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>`;
+      const tagEl = textEl.querySelector('.cl-tag');
+      if (tagEl) {
+        tagEl.insertAdjacentHTML('beforebegin', chipsHtml);
+      } else {
+        textEl.insertAdjacentHTML('beforeend', chipsHtml);
+      }
+    }
+  }
+
+  closeSignoff();
+  showToast(name + ' checked in!');
 }
-function saveLeftChecks() {
-  try {
-    const checked = [];
-    document.querySelectorAll('#leftScroll .cl-item.done').forEach(el => checked.push(el.id.replace('left-', '')));
-    localStorage.setItem('maker_lab_left_checks', JSON.stringify(checked));
-  } catch(e) {}
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeSignoff();
+});
+
+function resetSignoffs() {
+  if (!confirm(t('resetConfirm'))) return;
+  signoffs = {};
+  saveSignoffs();
+  renderLeftPanel();
+  showToast(t('resetToast'));
 }
+
 function loadLeftChecks() {
-  try {
-    const checked = JSON.parse(localStorage.getItem('maker_lab_left_checks') || '[]');
-    checked.forEach(id => { const el = document.getElementById('left-' + id); if (el) el.classList.add('done'); });
-  } catch(e) {}
+  // Restore done state from signoffs
+  Object.entries(signoffs).forEach(([id, names]) => {
+    if (names && names.length > 0) {
+      const el = document.getElementById('left-' + id);
+      if (el) {
+        el.classList.add('done');
+        const checkEl = el.querySelector('.cl-check');
+        if (checkEl) checkEl.innerHTML = '&#10003;';
+      }
+    }
+  });
 }
 
 // ── RIGHT PANEL ──
