@@ -153,42 +153,23 @@
   .hero-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.1;
+    line-height: 1.25;
   }
 
   .hero-line {
     font-family: 'Inter', 'Franklin Gothic Heavy', 'Helvetica Neue', sans-serif;
-    font-size: 6rem;
+    font-size: 5rem;
     font-weight: 900;
     letter-spacing: -0.03em;
     text-transform: uppercase;
-    /* Pure white fill */
-    background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    /* Dark solid shadow */
-    text-shadow:
-      0 4px 8px rgba(0,0,0,0.5),
-      0 2px 4px rgba(0,0,0,0.4);
+    color: #e4e4e7;
     user-select: none;
     cursor: default;
-    transition: filter 0.45s ease;
-  }
-
-  .hero-line:hover {
     filter:
       drop-shadow(0 0 8px rgba(59,130,246,0.8))
       drop-shadow(0 0 24px rgba(59,130,246,0.45))
       drop-shadow(0 0 48px rgba(59,130,246,0.2));
-  }
-
-  .hero-line:last-child {
-    /* LAB — near-white */
-    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    transition: filter 0.45s ease;
   }
 
   /* ── Bottom hint ── */
@@ -275,6 +256,28 @@
     to   { opacity:1; }
   }
 
+  /* ── Typing cursor ── */
+  .type-cursor {
+    display: inline;
+    color: #60a5fa;
+    margin-left: 0;
+    animation: cursorBlink 0.6s infinite;
+    text-shadow: 0 0 12px rgba(96,165,250,0.6), 0 0 28px rgba(59,130,246,0.3);
+    font-family: 'Inter', 'Franklin Gothic Heavy', 'Helvetica Neue', sans-serif;
+    font-weight: 900;
+  }
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .bottom-hint {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .bottom-hint.show {
+    opacity: 1;
+  }
+
   /* ── Mobile ── */
   @media (max-width: 860px) {
     .top-nav {
@@ -290,7 +293,7 @@
       padding-left: 32px;
     }
     .hero-line {
-      font-size: 3.2rem;
+      font-size: 2.6rem;
     }
     .bottom-hint {
       left: 32px;
@@ -313,7 +316,7 @@
       flex-wrap: wrap;
     }
     .hero-line {
-      font-size: 2.4rem;
+      font-size: 2rem;
     }
     .modal {
       min-width: auto;
@@ -341,8 +344,8 @@
 <!-- ── Hero ── -->
 <div class="hero">
   <div class="hero-text">
-    <span class="hero-line">WELCOME</span>
-    <span class="hero-line">MAKUBATOR</span>
+    <span class="hero-line" id="heroLine1"></span>
+    <span class="hero-line" id="heroLine2"></span>
 
   </div>
 </div>
@@ -382,6 +385,109 @@
       document.getElementById('contactModal').classList.add('hidden');
     }
   });
+
+  // ── Typing animation ──
+  (function startTyping() {
+    const line1 = document.getElementById('heroLine1');
+    const line2 = document.getElementById('heroLine2');
+    if (!line1 || !line2) return;
+
+    const phrases = [
+      ['Hello', 'MAKUBATORS!'],
+      ['Welcome to', 'IE MAKER LAB'],
+      ["Let's Create", 'Something AMAZING!']
+    ];
+
+    // Create cursor element (vertical bar)
+    const cursor = document.createElement('span');
+    cursor.className = 'type-cursor';
+    cursor.textContent = '|';
+
+    const TYPE_SPEED = 80;
+    const DELETE_SPEED = 35;
+    const PAUSE_AFTER_TYPE = 2000;
+    const PAUSE_AFTER_DELETE = 400;
+
+    let phraseIdx = 0;
+    let lineIdx = 0;     // 0 = line1, 1 = line2
+    let charIdx = 0;
+    let isDeleting = false;
+
+    function getLine() { return lineIdx === 0 ? line1 : line2; }
+
+    function tick() {
+      const [word1, word2] = phrases[phraseIdx];
+      const currentWord = lineIdx === 0 ? word1 : word2;
+      const line = getLine();
+
+      if (!isDeleting) {
+        // ── TYPING ──
+        if (charIdx < currentWord.length) {
+          // Remove trailing cursor-char from text, add new char, re-append cursor span
+          line.textContent = line.textContent.replace(/\|$/, '') + currentWord[charIdx];
+          charIdx++;
+          line.appendChild(cursor);
+          setTimeout(tick, TYPE_SPEED + Math.random() * 30);
+        } else {
+          // Current line finished — remove cursor span
+          if (cursor.parentNode) cursor.remove();
+          if (lineIdx === 0) {
+            // Move to line 2
+            lineIdx = 1;
+            charIdx = 0;
+            line2.appendChild(cursor);
+            setTimeout(tick, TYPE_SPEED);
+          } else {
+            // Both lines done — pause, then start deleting from line 2
+            setTimeout(function() {
+              isDeleting = true;
+              charIdx = word2.length;
+              line2.appendChild(cursor);
+              tick();
+            }, PAUSE_AFTER_TYPE);
+          }
+        }
+      } else {
+        // ── DELETING ──
+        if (charIdx > 0) {
+          // Remove cursor-char, then remove one actual character, re-append cursor
+          line.textContent = line.textContent.replace(/\|$/, '').slice(0, -1);
+          charIdx--;
+          line.appendChild(cursor);
+          setTimeout(tick, DELETE_SPEED + Math.random() * 15);
+        } else {
+          // Current line fully deleted
+          if (cursor.parentNode) cursor.remove();
+          line.textContent = '';
+          if (lineIdx === 0) {
+            // Both lines empty — move to next phrase
+            phraseIdx = (phraseIdx + 1) % phrases.length;
+            isDeleting = false;
+            lineIdx = 0;
+            charIdx = 0;
+            line1.appendChild(cursor);
+            setTimeout(tick, PAUSE_AFTER_DELETE);
+          } else {
+            // Move up to line 1 and delete it
+            lineIdx = 0;
+            charIdx = phrases[phraseIdx][0].length;
+            line1.appendChild(cursor);
+            setTimeout(tick, DELETE_SPEED);
+          }
+        }
+      }
+    }
+
+    // Show bottom hint after first phrase completes
+    setTimeout(function() {
+      const hint = document.querySelector('.bottom-hint');
+      if (hint) hint.classList.add('show');
+    }, 3500);
+
+    // Start
+    line1.appendChild(cursor);
+    setTimeout(tick, 400);
+  })();
 </script>
 
 </body>
