@@ -61,11 +61,24 @@
   .cl-item {
     display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px;
     border-radius: 6px; font-size: 13px; cursor: pointer; transition: background .12s; line-height: 1.5;
-    position: relative; isolation: isolate;
   }
   .cl-item:hover { background: var(--card-hover); }
-  .cl-item::before { content:''; position:absolute; inset:-2px; border-radius:inherit; background:rgba(59,130,246,0); filter:blur(8px); z-index:-1; transition:background .35s; }
-  .cl-item:hover::before { background:rgba(59,130,246,0.2); }
+
+  /* Universal blue glow on all interactive elements */
+  button, .home-link, .reset-btn, .icon-btn, .ms-item, .feedback-btn, .btn-cancel, .btn-confirm, .cl-item {
+    position: relative; isolation: isolate;
+  }
+  button::before, .home-link::before, .reset-btn::before, .icon-btn::before, .ms-item::before,
+  .feedback-btn::before, .btn-cancel::before, .btn-confirm::before, .cl-item::before {
+    content: ''; position: absolute; inset: -2px; border-radius: inherit;
+    background: rgba(59,130,246,0); filter: blur(8px); z-index: -1;
+    transition: background 0.35s ease;
+  }
+  button:hover::before, .home-link:hover::before, .reset-btn:hover::before, .icon-btn:hover::before,
+  .ms-item:hover::before, .feedback-btn:hover::before, .btn-cancel:hover::before, .btn-confirm:hover::before,
+  .cl-item:hover::before {
+    background: rgba(59,130,246,0.22);
+  }
   .cl-check {
     width:20px; height:20px; border-radius:50%; border:2px solid var(--border);
     flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;
@@ -95,11 +108,11 @@
   /* ── RIGHT PANEL ── */
   .right-panel { position:relative; z-index:1; flex:1; display:flex; flex-direction:column; min-width:0; background:var(--bg); }
   .header { display:flex; align-items:center; gap:14px; padding:14px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
-  .header .home-link { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); text-decoration:none; letter-spacing:0.04em; }
+  .header .home-link { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-muted); text-decoration:none; letter-spacing:0.04em; padding:6px 10px; border-radius:5px; }
   .header .home-link:hover { color:var(--text); }
-  .header-logo { width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,var(--accent),#06b6d4); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; color:#fff; flex-shrink:0; }
+  .header-logo { width:38px; height:38px; border-radius:9px; background:linear-gradient(135deg,var(--accent),#06b6d4); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; color:#fff; flex-shrink:0; }
   .header-info { flex:1; min-width:0; }
-  .header-title { font-size:16px; font-weight:700; letter-spacing:-0.02em; }
+  .header-title { font-size:18px; font-weight:700; letter-spacing:-0.02em; }
   .header-subtitle { font-size:11px; color:var(--text-muted); }
   .icon-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-family:inherit; transition:all .15s; }
   .icon-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); border-color:var(--border-hover); }
@@ -122,7 +135,6 @@
     background:transparent; border:1px solid transparent; color:var(--text-secondary);
     border-radius:6px; padding:14px 12px; font-size:16px; cursor:pointer;
     transition:all .15s; text-align:center; font-family:inherit; font-weight:500;
-    position:relative; isolation:isolate;
   }
   .ms-item:hover { background:rgba(255,255,255,0.03); border-color:var(--border); color:var(--text); }
   .ms-item:active { background:rgba(255,255,255,0.06); }
