@@ -3,735 +3,529 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff · Task Editor · IEMAKER LAB</title>
+<title>Staff · Content Editor · IE Maker Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #09090b;
-    --surface: #111113;
-    --card: rgba(255,255,255,0.025);
-    --card-hover: rgba(255,255,255,0.045);
-    --border: rgba(255,255,255,0.07);
-    --border-hover: rgba(255,255,255,0.13);
-    --text: #fafafa;
-    --text-secondary: #a1a1aa;
-    --text-muted: #71717a;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --success: #22c55e;
-    --warning: #eab308;
-    --danger: #ef4444;
-    --radius: 8px;
-    --radius-sm: 6px;
+    --bg: #09090b; --surface: #111113;
+    --card: rgba(255,255,255,0.025); --card-hover: rgba(255,255,255,0.045);
+    --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.13);
+    --text: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a;
+    --accent: #3b82f6; --accent-hover: #2563eb;
+    --success: #22c55e; --warning: #eab308; --danger: #ef4444;
+    --radius: 8px; --radius-sm: 6px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
+  select option { background:#18181b; color:#fafafa; }
   body {
-    font-family: 'Inter', 'Noto Sans TC', 'Noto Sans SC', -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100dvh;
-    display: flex;
-    overflow: hidden;
-    font-size: 14px;
-    letter-spacing: -0.01em;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    height: 100dvh; display: flex; overflow: hidden;
+    font-size: 15px; letter-spacing: -0.01em;
   }
-
-  /* ── Background glow layers ── */
   .bg-grid {
-    position: fixed; inset: 0;
-    pointer-events: none; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
     background-size: 60px 60px;
     mask-image: radial-gradient(ellipse 80% 60% at 30% 50%, black 30%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 30% 50%, black 30%, transparent 70%);
-  }
-  .ambient-glow {
-    position: fixed;
-    left: 80px; top: 50%;
-    transform: translateY(-50%);
-    width: 700px; height: 500px;
-    background: radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-    filter: blur(60px);
-  }
-  .edge-glow {
-    position: fixed; inset: 0;
-    pointer-events: none; z-index: 0;
-    background:
-      radial-gradient(ellipse 100% 350px at 50% 0%,   rgba(59,130,246,0.2) 0%, transparent 40%),
-      radial-gradient(ellipse 100% 280px at 50% 100%, rgba(59,130,246,0.14) 0%, transparent 40%),
-      radial-gradient(ellipse 350px 100% at 0% 50%,   rgba(59,130,246,0.2) 0%, transparent 40%),
-      radial-gradient(ellipse 280px 100% at 100% 50%, rgba(59,130,246,0.14) 0%, transparent 40%);
   }
 
-  /* ── Hover glow for interactive elements ── */
-  .item-entry, .sidebar-tab, .btn, .field-input, .field-select {
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    position: relative; z-index: 1; width: 380px; min-width: 380px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; height: 100dvh;
+  }
+  .left-header { padding: 20px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .left-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .left-header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .left-header-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-sm {
+    padding: 8px 16px; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
+    font-family: inherit; transition: all .15s;
+  }
+  .btn-sm:hover { background: rgba(255,255,255,0.04); color: var(--text); border-color: var(--border-hover); }
+  .btn-sm.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-sm.accent:hover { background: var(--accent-hover); }
+  .btn-sm.danger { color: var(--danger); }
+  .btn-sm.danger:hover { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); }
+
+  .left-scroll { flex:1; overflow-y: auto; padding: 10px 8px; }
+  .left-scroll::-webkit-scrollbar { width: 4px; }
+  .left-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+  .task-section { margin-bottom: 4px; }
+  .task-section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted); padding: 10px 14px 6px; display: flex; align-items: center; gap: 7px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-print{background:var(--accent);}.dot-laser{background:var(--warning);}.dot-general{background:var(--text-muted);}.dot-admin{background:var(--danger);}.dot-inv{background:var(--success);}
+  .cl-item {
+    padding: 12px 14px; border-radius: 6px; cursor: pointer; transition: all .12s;
+    display: flex; align-items: flex-start; gap: 10px; border: 1px solid transparent;
     position: relative; isolation: isolate;
   }
-  .item-entry::before, .sidebar-tab::before, .btn::before,
-  .field-input::before, .field-select::before {
-    content: '';
-    position: absolute; inset: -2px;
-    border-radius: inherit;
-    background: rgba(59,130,246,0);
-    filter: blur(8px);
-    z-index: -1;
-    transition: background 0.35s ease;
+  .cl-item:hover { background: var(--card-hover); }
+  .cl-item.editing { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.15); }
+  .cl-item.done .cl-check { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cl-check { width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all .15s; }
+  .cl-text { flex:1; min-width: 0; font-size: 14px; line-height: 1.55; }
+  .cl-signoffs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .cl-signoff-chip { font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text-muted);font-weight:500; }
+  .cl-edit-btn { font-size:14px;color:var(--text-muted);cursor:pointer;flex-shrink:0;opacity:0;transition:opacity .15s;background:none;border:none;padding:2px 6px; }
+  .cl-item:hover .cl-edit-btn { opacity: 1; }
+  .cl-edit-btn:hover { color: var(--accent); }
+  .task-editor-card {
+    margin:4px 10px 10px;padding:18px;background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);animation:fadeIn .15s ease;
   }
-  .item-entry:hover::before, .sidebar-tab:hover::before, .btn:hover::before,
-  .field-input:focus::before, .field-select:focus::before {
-    background: rgba(59,130,246,0.2);
+  .task-editor-card textarea {
+    width:100%;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+    border-radius:5px;color:var(--text);font-size:14px;font-family:inherit;resize:vertical;min-height:60px;
+    outline:none;transition:border-color .15s;line-height:1.5;
   }
+  .task-editor-card textarea:focus { border-color: var(--accent); }
+  .task-editor-card .editor-actions { display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap; }
+  .task-editor-card select { padding:7px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;outline:none; }
+  .left-footer { padding:12px 18px;border-top:1px solid var(--border);flex-shrink:0;font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center; }
 
-  /* ── LEFT SIDEBAR ── */
-  .sidebar {
-    position: relative; z-index: 1;
-    width: 300px; min-width: 300px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    height: 100dvh;
-  }
-  .sidebar-header {
-    padding: 18px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .sidebar-header .back {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-muted);
-    text-decoration: none; letter-spacing: 0.04em;
-    transition: color 0.2s; display: inline-block; margin-bottom: 8px;
-  }
-  .sidebar-header .back:hover { color: var(--text); }
-  .sidebar-header h2 {
-    font-size: 16px; font-weight: 700; letter-spacing: -0.02em;
-  }
-  .sidebar-header .subtitle {
-    font-size: 11px; color: var(--text-muted); margin-top: 2px;
-  }
+  /* ── RIGHT PANEL ── */
+  .right-panel { position:relative;z-index:1;flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg); }
+  .header { display:flex;align-items:center;gap:16px;padding:16px 24px;border-bottom:1px solid var(--border);flex-shrink:0; }
+  .header .home-link { font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);text-decoration:none;letter-spacing:0.04em; }
+  .header .home-link:hover { color:var(--text); }
+  .header-logo { width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;flex-shrink:0; }
+  .header-info { flex:1;min-width:0; }
+  .header-title { font-size:18px;font-weight:700;letter-spacing:-0.02em; }
+  .header-subtitle { font-size:12px;color:var(--text-muted); }
+  .btn { padding:9px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:inherit;transition:all .15s;background:transparent;color:var(--text-secondary);white-space:nowrap; }
+  .btn:hover { background:rgba(255,255,255,0.04);color:var(--text);border-color:var(--border-hover); }
+  .btn.primary { background:var(--accent);color:#fff;border-color:var(--accent); }
+  .btn.primary:hover { background:var(--accent-hover); }
+  .btn.primary.dirty { box-shadow:0 0 14px rgba(234,179,8,0.5); }
 
-  .sidebar-tabs {
-    display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .sidebar-tab {
-    flex:1; padding: 10px 0; text-align: center;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    color: var(--text-muted);
-    border-bottom: 2px solid transparent;
-    transition: all .15s; font-family: inherit;
-    background: none; border-top: none; border-left: none; border-right: none;
-  }
-  .sidebar-tab:hover { color: var(--text); }
-  .sidebar-tab.active {
-    color: var(--accent); border-bottom-color: var(--accent);
-  }
+  .editor-tabs { display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 24px; }
+  .editor-tab { padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none; }
+  .editor-tab:hover { color:var(--text); }
+  .editor-tab.active { color:var(--accent);border-bottom-color:var(--accent); }
+  .editor-body { flex:1;overflow-y:auto;padding:24px; }
+  .editor-body::-webkit-scrollbar { width:5px; }
+  .editor-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08);border-radius:4px; }
 
-  .item-list {
-    flex:1; overflow-y: auto; padding: 8px;
-  }
-  .item-list::-webkit-scrollbar { width: 4px; }
-  .item-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+  .guide-list-item { padding:14px 16px;border-radius:6px;cursor:pointer;transition:all .12s;border:1px solid transparent;margin-bottom:3px;display:flex;align-items:center;gap:12px; }
+  .guide-list-item:hover { background:var(--card-hover); }
+  .guide-list-item.active { background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2); }
+  .guide-list-item .g-key { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);min-width:160px; }
+  .guide-list-item .g-title-preview { font-weight:600;font-size:14px;flex:1; }
 
-  .item-entry {
-    padding: 10px 12px; border-radius: 6px;
-    cursor: pointer; transition: all .12s;
-    margin-bottom: 2px; border: 1px solid transparent;
-  }
-  .item-entry:hover { background: var(--card-hover); }
-  .item-entry.active { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2); }
-  .item-entry .item-label {
-    font-size: 13px; font-weight: 600;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .item-entry .item-meta {
-    font-size: 11px; color: var(--text-muted); margin-top: 2px;
-  }
-  .item-entry .item-tag {
-    display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 3px;
-    margin-left: 6px; font-weight: 600; text-transform: uppercase;
-  }
-  .item-tag.print   { background: rgba(59,130,246,0.12); color: var(--accent); }
-  .item-tag.laser   { background: rgba(234,179,8,0.12);  color: var(--warning); }
-  .item-tag.general { background: rgba(161,161,170,0.12); color: var(--text-secondary); }
-  .item-tag.admin   { background: rgba(239,68,68,0.12);  color: var(--danger); }
-  .item-tag.inv     { background: rgba(34,197,94,0.12);  color: var(--success); }
+  .menu-editor-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px; }
+  .menu-editor-section { background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px; }
+  .menu-editor-section .me-title { font-size:18px;font-weight:700;margin-bottom:3px;cursor:pointer; }
+  .menu-editor-section .me-subtitle { font-size:12px;color:var(--text-muted);margin-bottom:14px;cursor:pointer; }
+  .me-sub-item { padding:10px 12px;border-radius:5px;margin-bottom:5px;font-size:14px;cursor:pointer;border:1px solid transparent;display:flex;align-items:center;gap:8px;transition:all .12s;font-weight:500; }
+  .me-sub-item:hover { background:rgba(255,255,255,0.03);border-color:var(--border); }
+  .me-sub-item.active { background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2); }
+  .me-sub-item .me-type { font-size:10px;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.06);color:var(--text-muted); }
+  .btn-add-sm { width:100%;padding:10px;margin-top:10px;background:transparent;border:1px dashed var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s; }
+  .btn-add-sm:hover { border-color:var(--accent);color:var(--accent); }
 
-  .sidebar-footer {
-    padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0;
-    display: flex; gap: 8px;
-  }
-  .btn {
-    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    cursor: pointer; border: 1px solid var(--border);
-    font-family: inherit; transition: all .15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .btn-save {
-    flex:1; background: var(--accent); color: #fff; border-color: var(--accent);
-  }
-  .btn-save:hover { background: var(--accent-hover); }
-  .btn-reset {
-    background: transparent; color: var(--text-muted);
-  }
-  .btn-reset:hover { background: rgba(255,255,255,0.04); color: var(--danger); border-color: rgba(239,68,68,0.3); }
+  .form-section { margin-bottom:22px; }
+  .form-section-title { font-size:14px;font-weight:700;margin-bottom:12px; }
+  .field-label { font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px; }
+  .field-input,.field-textarea { width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s; }
+  .field-input:focus,.field-textarea:focus { border-color:var(--accent); }
+  .field-textarea { resize:vertical;min-height:80px;line-height:1.55; }
+  .field-select { padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:14px;font-family:inherit;cursor:pointer;outline:none; }
+  .step-row { display:flex;gap:10px;margin-bottom:10px;padding:12px;background:rgba(255,255,255,0.015);border-radius:5px;border:1px solid transparent;align-items:flex-start; }
+  .step-row:hover { border-color:var(--border); }
+  .step-num { width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0; }
+  .step-inputs { flex:1; }
+  .step-inputs input { width:100%;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:6px; }
+  .step-inputs input:focus { border-color:var(--accent); }
+  .step-del { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px;padding:2px 8px;transition:color .15s; }
+  .step-del:hover { color:var(--danger); }
+  .empty-state { display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:16px;text-align:center;line-height:1.7; }
+  .toast { position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#18181b;border:1px solid var(--border);color:var(--text);padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;pointer-events:none;display:none; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px) translateX(-50%);} to{opacity:1;transform:translateY(0) translateX(-50%);} }
+  @keyframes fadeOut { to{opacity:0;transform:translateY(-6px) translateX(-50%);} }
 
-  /* ── RIGHT EDITOR ── */
-  .editor {
-    position: relative; z-index: 1;
-    flex:1; display: flex; flex-direction: column; min-width: 0;
-    background: var(--bg);
+  @media (max-width:860px) {
+    body{flex-direction:column;}
+    .left-panel{width:100%;min-width:0;max-height:40vh;border-right:none;border-bottom:1px solid var(--border);}
+    .right-panel{height:auto;flex:1;}
+    .menu-editor-grid{grid-template-columns:1fr;}
   }
-  .editor-header {
-    padding: 18px 24px; border-bottom: 1px solid var(--border);
-    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
-  }
-  .editor-header h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
-  .editor-header .hint { font-size: 12px; color: var(--text-muted); }
-
-  .editor-body {
-    flex:1; overflow-y: auto; padding: 24px;
-    display: flex; flex-direction: column; gap: 20px;
-  }
-  .editor-body::-webkit-scrollbar { width: 5px; }
-  .editor-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
-
-  .field-group {
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .field-label {
-    font-size: 11px; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.05em;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .field-label .lang-badge {
-    font-size: 10px; padding: 1px 6px; border-radius: 3px;
-    background: rgba(255,255,255,0.06); font-weight: 500;
-  }
-  .field-input {
-    width: 100%; padding: 10px 14px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 6px; color: var(--text);
-    font-size: 14px; font-family: inherit;
-    transition: border-color .15s; outline: none;
-    letter-spacing: -0.01em;
-  }
-  .field-input:focus { border-color: var(--accent); }
-  .field-input::placeholder { color: var(--text-muted); }
-  textarea.field-input {
-    resize: vertical; min-height: 80px; line-height: 1.55;
-  }
-  .field-select {
-    width: 100%; padding: 10px 14px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 6px; color: var(--text);
-    font-size: 14px; font-family: inherit;
-    cursor: pointer; outline: none;
-  }
-  .field-select:focus { border-color: var(--accent); }
-
-  .lang-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-  }
-
-  .empty-state {
-    flex:1; display: flex; align-items: center; justify-content: center;
-    color: var(--text-muted); font-size: 14px;
-    text-align: center; line-height: 1.6;
-  }
-
-  .toast {
-    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-    background: #18181b; border: 1px solid var(--border);
-    color: var(--text); padding: 10px 22px; border-radius: 8px;
-    font-size: 13px; z-index: 100;
-    animation: fadeIn .2s ease, fadeOut .3s ease 1.5s forwards;
-    pointer-events: none;
-  }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(8px) translateX(-50%); } to { opacity:1; transform:translateY(0) translateX(-50%); } }
-  @keyframes fadeOut { to { opacity:0; transform:translateY(-6px) translateX(-50%); } }
 </style>
 </head>
 <body>
-
 <div class="bg-grid"></div>
-<div class="ambient-glow"></div>
-<div class="edge-glow"></div>
 
-<!-- ── SIDEBAR ── -->
-<div class="sidebar">
-  <div class="sidebar-header">
-    <a href="index.html" class="back">&larr; IEMAKER LAB</a>
-    <h2>Staff Editor</h2>
-    <div class="subtitle">Edit tasks and guides for Student Assistants</div>
-  </div>
-  <div class="sidebar-tabs">
-    <button class="sidebar-tab active" onclick="switchTab('tasks')">Tasks</button>
-    <button class="sidebar-tab" onclick="switchTab('guides')">Guides</button>
-    <button class="sidebar-tab" onclick="switchTab('presets')">Presets</button>
-  </div>
-  <div class="item-list" id="itemList"></div>
-  <div class="sidebar-footer">
-    <button class="btn btn-save" onclick="saveAll()">Save All Changes</button>
-    <button class="btn btn-reset" onclick="resetAll()">Reset</button>
-  </div>
-</div>
-
-<!-- ── EDITOR ── -->
-<div class="editor" id="editor">
-  <div class="editor-header">
-    <h3 id="editorTitle">Select an item to edit</h3>
-    <span class="hint" id="editorHint"></span>
-  </div>
-  <div class="editor-body" id="editorBody">
-    <div class="empty-state">
-      Select a task, guide, or preset from the sidebar to edit.<br>
-      Changes are saved to browser storage.
+<!-- ── LEFT PANEL ── -->
+<div class="left-panel">
+  <div class="left-header">
+    <h2>DAILY TASKS</h2>
+    <div class="subtitle">Staff Editor — click a task to edit</div>
+    <div class="left-header-actions">
+      <button class="btn-sm accent" onclick="addNewTask()">+ Add Task</button>
+      <button class="btn-sm" onclick="saveAll()">Save Tasks</button>
     </div>
   </div>
+  <div class="left-scroll" id="leftScroll"></div>
+  <div class="left-footer">
+    <span>Tap a task to view signoffs &amp; edit</span>
+    <span style="color:var(--text-muted);" id="signoffCount"></span>
+  </div>
 </div>
 
-<div id="toast" class="toast" style="display:none;"></div>
+<!-- ── RIGHT PANEL ── -->
+<div class="right-panel">
+  <div class="header">
+    <a href="index.html" class="home-link">&larr; Home</a>
+    <div class="header-logo">IE</div>
+    <div class="header-info">
+      <div class="header-title">IE Maker Lab</div>
+      <div class="header-subtitle">Staff Content Editor</div>
+    </div>
+    <button class="btn primary" id="saveAllBtn" onclick="saveAll()">Save All</button>
+    <button class="btn" onclick="resetAll()">Reset</button>
+  </div>
+  <div class="editor-tabs" id="editorTabs">
+    <button class="editor-tab active" onclick="switchEditorTab('menu')">Main Menu</button>
+    <button class="editor-tab" onclick="switchEditorTab('guides')">Guides</button>
+  </div>
+  <div class="editor-body" id="editorBody">
+    <div class="empty-state">Select a tab above to start editing.</div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 // ═══════════════════════════════════════
-//  DEFAULTS (mirror assistant.html)
+//  DEFAULT DATA (English only)
 // ═══════════════════════════════════════
 const DEFAULT_TASKS = [
-  { id:"d1", tag:"print",   en:"Clean 3D Printer zone, remove waste, check desiccant beads, wash print plates", tc:"清潔 3D 打印區域：清除廢料、檢查除濕顆粒、清洗打印平台", sc:"清洁 3D 打印区域：清除废料、检查除湿颗粒、清洗打印平台" },
-  { id:"d2", tag:"laser",   en:"Clean laser machine workbed and waste materials", tc:"清潔激光機工作台及廢料", sc:"清洁激光机工作台及废料" },
-  { id:"d3", tag:"general", en:"Tidy up and clean workbenches", tc:"整理清潔工作台", sc:"整理清洁工作台" },
-  { id:"d4", tag:"general", en:"Organize tool cabinet and ensure tools are returned", tc:"整理工具櫃並確認工具歸位", sc:"整理工具柜并确认工具归位" },
-  { id:"d5", tag:"admin",   en:"Check Key Management System", tc:"檢查鑰匙管理系統", sc:"检查钥匙管理系统" },
-  { id:"d6", tag:"general", en:"Clean and reorganize display cabinet at WS03 corridor", tc:"清潔整理 WS03 走廊展示櫃", sc:"清洁整理 WS03 走廊展示柜" },
-  { id:"d7", tag:"general", en:"Organize Student Maker Corner and project displays", tc:"整理學生創客角落及項目展示", sc:"整理学生创客角落及项目展示" },
-  { id:"d8", tag:"inv",     en:"Check and refill component cabinet: screws, nuts, capacitors, etc.", tc:"檢查補充零件櫃（螺絲、螺母、電容等）", sc:"检查补充零件柜（螺丝、螺母、电容等）" },
-  { id:"d9", tag:"general", en:"Clean sink area, refill paper towels and soap", tc:"清潔洗手台區域並補充紙巾及洗手液", sc:"清洁洗手台区域并补充纸巾及洗手液" },
-  { id:"d10",tag:"general", en:"Charge batteries for vacuum, drill, screwdriver, etc.", tc:"為無線工具電池充電", sc:"为无线工具电池充电" },
+  { id:"d1", tag:"print",   en:"Clean 3D Printer zone, remove waste, check desiccant beads, wash print plates" },
+  { id:"d2", tag:"laser",   en:"Clean laser machine workbed and waste materials" },
+  { id:"d3", tag:"general", en:"Tidy up and clean workbenches" },
+  { id:"d4", tag:"general", en:"Organize tool cabinet and ensure tools are returned" },
+  { id:"d5", tag:"admin",   en:"Check Key Management System" },
+  { id:"d6", tag:"general", en:"Clean and reorganize display cabinet at WS03 corridor" },
+  { id:"d7", tag:"general", en:"Organize Student Maker Corner and project displays" },
+  { id:"d8", tag:"inv",     en:"Check and refill component cabinet: screws, nuts, capacitors, etc." },
+  { id:"d9", tag:"general", en:"Clean sink area, refill paper towels and soap" },
+  { id:"d10",tag:"general", en:"Charge batteries for vacuum, drill, screwdriver, etc." },
 ];
 
 const DEFAULT_GUIDE = {
-  "3dprint-assist": {
-    en:{title:"Assist Students with 3D Printing",body:"Help students level the print bed, load filament, start prints, and troubleshoot common issues."},
-    tc:{title:"協助同學使用 3D 打印機",body:"協助同學調平平台、裝載線材、啟動打印並排查常見問題。"},
-    sc:{title:"协助同学使用 3D 打印机",body:"协助同学调平平台、装载线材、启动打印并排查常见问题。"},
-    steps:[
-      {en:"Check and level the print bed",tc:"檢查打印平台是否平整 (bed leveling)",sc:"检查打印平台是否平整 (bed leveling)"},
-      {en:"Help load PLA / PETG filament",tc:"協助裝載 PLA / PETG 線材",sc:"协助装载 PLA / PETG 线材"},
-      {en:"Import STL, slice with correct settings, start print",tc:"導入 STL → 切片軟件設定參數 → 開始打印",sc:"导入 STL → 切片软件设定参数 → 开始打印"},
-      {en:"Monitor first layer adhesion, pause and adjust if needed",tc:"監控首層附著，必要時暫停調整",sc:"监控首层附着，必要时暂停调整"},
-    ],tag:"coming"
-  },
-  "3dprint-desiccant": {
-    en:{title:"Replace 3D Printer Desiccant Beads",body:"Check the desiccant beads in the filament dry box regularly. If they change color, replace or regenerate them."},
-    tc:{title:"更換 3D 打印機除濕顆粒",body:"定期檢查線材乾燥箱內的除濕顆粒。若顆粒變色，需要更換或再生。"},
-    sc:{title:"更换 3D 打印机除湿颗粒",body:"定期检查线材干燥箱内的除湿颗粒。若颗粒变色，需要更换或再生。"},
-    steps:[
-      {en:"Open the filament dry box",tc:"打開線材乾燥箱 / 乾燥盒",sc:"打开线材干燥箱 / 干燥盒"},
-      {en:"Check bead color (orange = OK, green = saturated)",tc:"檢查除濕顆粒顏色（橙色=正常，綠色=已吸濕）",sc:"检查除湿颗粒颜色（橙色=正常，绿色=已吸湿）"},
-      {en:"Remove saturated beads, pour in fresh desiccant",tc:"取出已變色的顆粒，倒入新的除濕顆粒",sc:"取出已变色的颗粒，倒入新的除湿颗粒"},
-      {en:"Old beads can be regenerated in microwave",tc:"舊顆粒可用微波爐加熱再生（視類型而定）",sc:"旧颗粒可用微波炉加热再生（视类型而定）"},
-      {en:"Close container tightly, ensure good seal",tc:"蓋緊乾燥盒，確認密封良好",sc:"盖紧干燥盒，确认密封良好"},
-    ],tag:"coming"
-  },
-  "3dprint-clean": {
-    en:{title:"Clean 3D Printer Zone",body:"Remove waste filament scraps and failed prints. Wash print plates. Wipe down printer surfaces and surrounding area."},
-    tc:{title:"清潔 3D 打印區域",body:"清除廢棄線材碎片和失敗的打印件。清洗打印平台。擦拭打印機表面和周圍區域。"},
-    sc:{title:"清洁 3D 打印区域",body:"清除废弃线材碎片和失败的打印件。清洗打印平台。擦拭打印机表面和周围区域。"},
-    steps:[
-      {en:"Remove all failed prints from bed",tc:"移除平台上所有廢棄打印件及支撐材料",sc:"移除平台上所有废弃打印件及支撑材料"},
-      {en:"Wash print plates with water or alcohol",tc:"用清水或酒精清洗打印平台",sc:"用清水或酒精清洗打印平台"},
-      {en:"Clean filament scraps from floor and table",tc:"清理地面及桌上的線材碎片",sc:"清理地面及桌上的线材碎片"},
-      {en:"Wipe printer exterior and surrounding area",tc:"擦拭打印機外殼、觸控屏及周圍區域",sc:"擦拭打印机外壳、触控屏及周围区域"},
-      {en:"Check desiccant bead status",tc:"檢查除濕顆粒狀態",sc:"检查除湿颗粒状态"},
-      {en:"Properly dispose of waste",tc:"妥善丟棄廢料（PLA 可回收處理）",sc:"妥善丢弃废料（PLA 可回收处理）"},
-    ],tag:"daily"
-  },
-  "laser-assist": {
-    en:{title:"Assist Students with Laser Cutting",body:"Help students set up material, adjust focus, configure power/speed in LightBurn, and monitor cuts."},
-    tc:{title:"協助同學使用激光切割機",body:"協助同學放置材料、調整焦距、在 LightBurn 中配置功率/速度參數並監控切割過程。務必檢查排煙系統是否運行。"},
-    sc:{title:"协助同学使用激光切割机",body:"协助同学放置材料、调整焦距、在 LightBurn 中配置功率/速度参数并监控切割过程。务必检查排烟系统是否运行。"},
-    steps:[
-      {en:"Ensure fume extractor is on",tc:"確認排煙系統已開啟並正常運行",sc:"确认排烟系统已开启并正常运行"},
-      {en:"Help position material and adjust focus",tc:"協助放置材料並調整激光頭焦距",sc:"协助放置材料并调整激光头焦距"},
-      {en:"Configure power/speed/passes in LightBurn",tc:"在 LightBurn 設定功率 / 速度 / 次數",sc:"在 LightBurn 设定功率 / 速度 / 次数"},
-      {en:"Start job and monitor throughout",tc:"啟動切割並全程監控（不可離開）",sc:"启动切割并全程监控（不可离开）"},
-      {en:"Wait for smoke to clear before opening lid",tc:"完成後等待煙霧排清再打開蓋子",sc:"完成后等待烟雾排清再打开盖子"},
-    ],tag:"coming"
-  },
-  "laser-clean": {
-    en:{title:"Clean Laser Machine and Waste",body:"Clean the honeycomb bed, remove debris, empty the scrap bin, wipe the lens cover gently."},
-    tc:{title:"清潔激光機及廢料",body:"清潔蜂窩平台、移除碎片、清空廢料收集盤、輕輕擦拭鏡頭蓋、確保通風正常。"},
-    sc:{title:"清洁激光机及废料",body:"清洁蜂窝平台、移除碎片、清空废料收集盘、轻轻擦拭镜头盖、确保通风正常。"},
-    steps:[
-      {en:"Turn off laser, wait to cool",tc:"關閉激光機電源，等待冷卻",sc:"关闭激光机电源，等待冷却"},
-      {en:"Empty scrap bin under honeycomb bed",tc:"清空蜂窩平台下方的廢料收集盤",sc:"清空蜂窝平台下方的废料收集盘"},
-      {en:"Clean debris from honeycomb bed",tc:"用刷子或吸塵器清理蜂窩平台上的碎片",sc:"用刷子或吸尘器清理蜂窝平台上的碎片"},
-      {en:"Gently wipe lens cover with lens tissue",tc:"用鏡頭紙輕輕擦拭鏡頭蓋（勿用普通紙巾）",sc:"用镜头纸轻轻擦拭镜头盖（勿用普通纸巾）"},
-      {en:"Wipe machine exterior",tc:"擦拭機器外部及周圍工作區域",sc:"擦拭机器外部及周围工作区域"},
-      {en:"Check exhaust duct is clear",tc:"檢查排煙管道是否暢通",sc:"检查排烟管道是否畅通"},
-    ],tag:"daily"
-  },
-  "3dprint-overview": {
-    en:{title:"3D Printer Duties",body:"3 main duties for Student Assistants. Tap any card below for details."},
-    tc:{title:"3D 打印機職責",body:"學生助理的 3 項主要職責，點擊下方卡片查看詳情。"},
-    sc:{title:"3D 打印机职责",body:"学生助理的 3 项主要职责，点击下方卡片查看详情。"},
-    links:["3dprint-assist","3dprint-desiccant","3dprint-clean"]
-  },
-  "laser-overview": {
-    en:{title:"Laser Cutter Duties",body:"2 main duties for Student Assistants. Tap any card below for details."},
-    tc:{title:"激光切割機職責",body:"學生助理的 2 項主要職責，點擊下方卡片查看詳情。"},
-    sc:{title:"激光切割机职责",body:"学生助理的 2 项主要职责，点击下方卡片查看详情。"},
-    links:["laser-assist","laser-clean"]
-  },
-  "training": {
-    en:{title:"Self-Training Opportunities",body:"Explore these machines during your shift. Self-training materials available."},
-    tc:{title:"自學培訓機會",body:"在值班期間探索這些機器。自學培訓材料可供查閱。"},
-    sc:{title:"自学培训机会",body:"在值班期间探索这些机器。自学培训材料可供查阅。"},
-    equipment:[
-      {en:"3D Printer",tc:"3D 打印機",sc:"3D 打印机",q:"3dprint-assist"},
-      {en:"3D Scanner",tc:"3D 掃描儀",sc:"3D 扫描仪",q:"training"},
-      {en:"Laser Cutter",tc:"激光切割機",sc:"激光切割机",q:"laser-assist"},
-      {en:"UV Printer",tc:"UV 打印機",sc:"UV 打印机",q:"training"},
-      {en:"Vacuum Forming",tc:"真空成型機",sc:"真空成型机",q:"training"},
-      {en:"Wire Cut Machine",tc:"線切割機",sc:"线切割机",q:"training"},
-      {en:"CNC Router",tc:"CNC 雕刻機",sc:"CNC 雕刻机",q:"training"},
-      {en:"Vinyl Cutter",tc:"乙烯基切割機",sc:"乙烯基切割机",q:"training"},
-      {en:"Photo Studio",tc:"攝影工作室",sc:"摄影工作室",q:"training"},
-    ]
-  },
+  "3dprint-assist":{title:"Assist Students with 3D Printing",body:"Help students level the print bed, load filament, start prints, and troubleshoot common issues.",steps:["Check and level the print bed","Help load PLA / PETG filament","Import STL, slice with correct settings, start print","Monitor first layer adhesion, pause and adjust if needed"],tag:"coming"},
+  "3dprint-desiccant":{title:"Replace 3D Printer Desiccant Beads",body:"Check the desiccant beads in the filament dry box regularly. If they change color, replace or regenerate them.",steps:["Open the filament dry box","Check bead color (orange = OK, green/dark = saturated)","Remove saturated beads, pour in fresh desiccant","Old beads can be regenerated in microwave","Close container tightly, ensure good seal"],tag:"coming"},
+  "3dprint-clean":{title:"Clean 3D Printer Zone",body:"Keep the printer area clean and organized for safe operation.",steps:["Remove all failed prints and support material","Wash print plates with water or isopropyl alcohol","Clean filament scraps from floor and table","Wipe printer exterior, touchscreen, and surrounding area","Check desiccant bead status","Properly dispose of waste"],tag:"daily"},
+  "laser-assist":{title:"Assist Students with Laser Cutter",body:"Help students position material, configure power/speed in LightBurn, and operate the laser safely.",steps:["Turn on ventilation and water chiller","Help place and align material on honeycomb bed","Set focus using the focus tool","Configure power/speed in LightBurn","Run a test frame, then start the job"],tag:"coming"},
+  "laser-clean":{title:"Clean Laser Machine and Waste",body:"Clean the honeycomb bed, remove debris, empty the scrap bin, and ensure proper ventilation.",steps:["Turn off laser, wait for it to cool down","Empty the scrap bin underneath","Clean debris from honeycomb bed with brush or vacuum","Gently wipe lens cover with lens tissue","Wipe machine exterior and surrounding area","Check that exhaust duct is clear"],tag:"daily"},
+  "3dprint-troubleshoot":{title:"3D Printer Troubleshooting",body:"Common 3D printer issues and how to resolve them.",steps:["Print not sticking — Re-level bed, clean with alcohol, check temp","Filament not extruding — Check for clog, preheat nozzle","Stringing/blobs — Adjust retraction, lower nozzle temp","Layer shift — Check belt tension, ensure stable frame","Strange noise — Stop print, check loose screws or debris"],tag:"warning"},
+  "laser-troubleshoot":{title:"Laser Cutter Troubleshooting",body:"Common laser cutter issues and how to resolve them.",steps:["Not cutting through — Reduce speed, increase power, check focus","Burn marks — Increase speed, use masking tape, check air assist","Laser not firing — Check water chiller, ensure lid is closed","Uneven engraving — Check bed level, clean lens"],tag:"warning"},
+  "tool-organize":{title:"Organize Tool Cabinet",body:"Keep the tool cabinet tidy and ensure all tools are in place.",steps:["Sort tools by category: hand, power, measuring","Check each tool for damage — report broken tools","Wipe tools clean before returning to cabinet","Ensure labels match tool positions"],tag:"daily"},
+  "tool-borrow":{title:"Borrow / Return Tools",body:"Procedure for lending tools and checking them back in.",steps:["Ask student to show ID and record name","Note tool name, condition, expected return time","On return, inspect tool for damage","Clean and return tool to designated spot"],tag:"daily"},
+  "tool-keys":{title:"Key Management System",body:"Manage lab keys and ensure proper tracking.",steps:["Check key cabinet at start and end of shift","Verify all keys are present","Log key sign-outs with name, time, purpose","Report missing keys to supervisor immediately"],tag:"daily"},
+  "tool-components":{title:"Component Cabinet",body:"Check and refill the electronic component cabinet.",steps:["Inventory: screws, nuts, capacitors, resistors, etc.","Sort and organize by type and size","Note low-stock items for supervisor ordering","Keep cabinet clean and labels visible"],tag:"daily"},
+  "3dprint-overview":{title:"3D Printer Duties",body:"3 main duties for Student Assistants.",links:["3dprint-assist","3dprint-desiccant","3dprint-clean"]},
+  "laser-overview":{title:"Laser Cutter Duties",body:"2 main duties for Student Assistants.",links:["laser-assist","laser-clean"]},
+  "training":{title:"Self-Training Opportunities",body:"Explore these machines during your shift.",equipment:[{en:"3D Printer",q:"3dprint-assist"},{en:"3D Scanner",q:"training"},{en:"Laser Cutter",q:"laser-assist"},{en:"UV Printer",q:"training"},{en:"Vacuum Forming",q:"training"},{en:"Wire Cut Machine",q:"training"},{en:"CNC Router",q:"training"},{en:"Vinyl Cutter",q:"training"},{en:"Photo Studio",q:"training"}]},
 };
 
-const DEFAULT_PRESETS = {
-  all:[
-    {en:"3D Printer",tc:"3D 打印機",sc:"3D 打印机",q:"3dprint-overview"},
-    {en:"Clean Printer Zone",tc:"清潔打印區",sc:"清洁打印区",q:"3dprint-clean"},
-    {en:"Replace Desiccant",tc:"更換除濕顆粒",sc:"更换除湿颗粒",q:"3dprint-desiccant"},
-    {en:"Laser Cutter",tc:"激光切割機",sc:"激光切割机",q:"laser-overview"},
-    {en:"Clean Laser",tc:"清潔激光機",sc:"清洁激光机",q:"laser-clean"},
-    {en:"Self-Training",tc:"自學培訓",sc:"自学培训",q:"training"},
-  ],
-  "3dprint":[
-    {en:"3D Printer Overview",tc:"3D 打印機總覽",sc:"3D 打印机总览",q:"3dprint-overview"},
-    {en:"Assist Students",tc:"協助同學使用",sc:"协助同学使用",q:"3dprint-assist"},
-    {en:"Replace Desiccant",tc:"更換除濕顆粒",sc:"更换除湿颗粒",q:"3dprint-desiccant"},
-    {en:"Clean Printer Zone",tc:"清潔打印區",sc:"清洁打印区",q:"3dprint-clean"},
-  ],
-  laser:[
-    {en:"Laser Overview",tc:"激光機總覽",sc:"激光机总览",q:"laser-overview"},
-    {en:"Assist Students",tc:"協助同學使用",sc:"协助同学使用",q:"laser-assist"},
-    {en:"Clean Laser",tc:"清潔激光機",sc:"清洁激光机",q:"laser-clean"},
-  ],
-  training:[
-    {en:"Training Overview",tc:"培訓總覽",sc:"培训总览",q:"training"},
-    {en:"Learn 3D Printer",tc:"學 3D Printer",sc:"学 3D Printer",q:"3dprint-assist"},
-    {en:"Learn Laser Cutter",tc:"學 Laser Cutter",sc:"学 Laser Cutter",q:"laser-assist"},
-    {en:"Learn 3D Scanner",tc:"學 3D Scanner",sc:"学 3D Scanner",q:"training"},
-  ],
-};
+const DEFAULT_MAIN_MENU = [
+  {id:'3dprint',title:'3D PRINTER',subtitle:'Print, clean, maintain',subs:[
+    {en:'Use 3D Printer',q:'3dprint-assist'},{en:'Replace Filament',pdf:'教程/IE_MarkerLab_Filament_Retreat_Manual.pdf'},{en:'Clean Printer Zone',q:'3dprint-clean'},{en:'Replace Desiccant',q:'3dprint-desiccant'},{en:'Troubleshooting',q:'3dprint-troubleshoot'},
+  ]},
+  {id:'laser',title:'LASER CUTTER',subtitle:'Engrave, cut, clean',subs:[
+    {en:'Use Laser Cutter',pdf:'教程/IE_MakerLab_Laser_Cutter_S400_Manual.pdf'},{en:'Clean Laser Machine',q:'laser-clean'},{en:'Troubleshooting',q:'laser-troubleshoot'},
+  ]},
+  {id:'tools',title:'TOOL CABINET',subtitle:'Tools, keys, parts',subs:[
+    {en:'Organize Tool Cabinet',q:'tool-organize'},{en:'Borrow / Return Tools',q:'tool-borrow'},{en:'Check Key System',q:'tool-keys'},{en:'Component Cabinet',q:'tool-components'},
+  ]},
+];
 
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let currentTab = 'tasks';
-let selectedKey = null;
-let editedData = loadData();
+function loadFromStorage(key, fallback) { try{const r=localStorage.getItem(key);if(r)return JSON.parse(r);}catch(e){} return JSON.parse(JSON.stringify(fallback)); }
+function saveToStorage(key, data) { try{localStorage.setItem(key,JSON.stringify(data));return true;}catch(e){return false;} }
 
-function loadData() {
-  return {
-    tasks: loadFromStorage('maker_lab_staff_tasks', DEFAULT_TASKS),
-    guide: loadFromStorage('maker_lab_staff_guide', DEFAULT_GUIDE),
-    presets: loadFromStorage('maker_lab_staff_presets', DEFAULT_PRESETS),
-  };
-}
-
-function loadFromStorage(key, fallback) {
-  try { const v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch(e) {}
-  return JSON.parse(JSON.stringify(fallback)); // deep clone
-}
-
-// ═══════════════════════════════════════
-//  RENDER SIDEBAR
-// ═══════════════════════════════════════
-function renderItemList() {
-  const el = document.getElementById('itemList');
-  let html = '';
-
-  if (currentTab === 'tasks') {
-    html = editedData.tasks.map((t, i) => `
-      <div class="item-entry${selectedKey === t.id ? ' active' : ''}" onclick="selectTask('${t.id}')">
-        <div class="item-label">${escHtml(t.en || t.id)} <span class="item-tag ${t.tag}">${t.tag}</span></div>
-        <div class="item-meta">${escHtml((t.tc || '').substring(0, 40))}${(t.tc||'').length > 40 ? '...' : ''}</div>
-      </div>
-    `).join('');
-  } else if (currentTab === 'guides') {
-    html = Object.entries(editedData.guide).map(([k, g]) => `
-      <div class="item-entry${selectedKey === k ? ' active' : ''}" onclick="selectGuide('${k}')">
-        <div class="item-label">${escHtml((g.en?.title || k))}</div>
-        <div class="item-meta">${k}${g.tag ? ' · '+g.tag : ''}</div>
-      </div>
-    `).join('');
-  } else if (currentTab === 'presets') {
-    html = Object.entries(editedData.presets).map(([cat, items]) => `
-      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">${cat}</div>
-      ${items.map((p, i) => {
-        const key = `${cat}_${i}`;
-        return `
-        <div class="item-entry${selectedKey === key ? ' active' : ''}" onclick="selectPreset('${cat}', ${i})">
-          <div class="item-label">${escHtml(p.en || '(empty)')}</div>
-          <div class="item-meta">→ ${p.q}</div>
-        </div>`;
-      }).join('')}
-    `).join('');
+// Migrate old guide format {en:{title,body},tc:{title,body}} → flat {title,body}
+function migrateGuide(g) {
+  if (g.en && g.en.title !== undefined) { g.title = g.en.title; g.body = g.en.body || ''; delete g.en; delete g.tc; delete g.sc; }
+  if (g.steps && g.steps.length && typeof g.steps[0] === 'object') {
+    g.steps = g.steps.map(s => s.en || s.tc || Object.values(s)[0] || '');
   }
-
-  el.innerHTML = html;
+  if (g.equipment && g.equipment.length && g.equipment[0].tc !== undefined) { g.equipment.forEach(e => { if (e.tc) delete e.tc; if (e.sc) delete e.sc; }); }
+  return g;
+}
+function loadGuide() {
+  let g = loadFromStorage('maker_lab_staff_guide', DEFAULT_GUIDE);
+  Object.keys(g).forEach(k => { g[k] = migrateGuide(g[k]); });
+  return g;
 }
 
-// ═══════════════════════════════════════
-//  RENDER EDITOR
-// ═══════════════════════════════════════
-function selectTask(id) {
-  selectedKey = id;
-  const t = editedData.tasks.find(x => x.id === id);
-  if (!t) return;
-  renderItemList();
-  document.getElementById('editorTitle').textContent = 'Edit Task';
-  document.getElementById('editorHint').textContent = 'ID: ' + id;
+let state = {
+  tasks: loadFromStorage('maker_lab_staff_tasks', DEFAULT_TASKS),
+  guide: loadGuide(),
+  menu: loadFromStorage('maker_lab_staff_menu', DEFAULT_MAIN_MENU),
+  editorTab: 'menu', selectedGuide: null, selectedSubItem: null, editingTaskId: null, dirty: false,
+};
 
-  const body = document.getElementById('editorBody');
-  body.innerHTML = `
-    <div class="field-group">
-      <div class="field-label">Tag / Category</div>
-      <select class="field-select" onchange="updateTaskField('${id}','tag',this.value)">
-        ${['print','laser','general','admin','inv'].map(v => `<option value="${v}" ${t.tag===v?'selected':''}>${v.toUpperCase()}</option>`).join('')}
-      </select>
-    </div>
-    <div class="lang-grid">
-      ${['en','tc','sc'].map(lang => {
-        const badge = {en:'English',tc:'繁體中文',sc:'简体中文'}[lang];
-        const ph = {en:'Task title in English',tc:'繁體中文任務名稱',sc:'简体中文任务名称'}[lang];
-        return `<div class="field-group">
-          <div class="field-label"><span class="lang-badge">${badge}</span></div>
-          <textarea class="field-input" onchange="updateTaskField('${id}','${lang}',this.value)" placeholder="${ph}">${escHtml(t[lang]||'')}</textarea>
-        </div>`;
-      }).join('')}
-    </div>
-    <div class="field-group" style="margin-top:8px;">
-      <div class="field-label">Danger Zone</div>
-      <button class="btn btn-reset" onclick="deleteTask('${id}')" style="align-self:flex-start;">Delete This Task</button>
-    </div>
-  `;
+let signoffs = {};
+function loadSignoffs() { try{const r=localStorage.getItem('maker_lab_signoffs');if(r)signoffs=JSON.parse(r);}catch(e){signoffs={};} }
+loadSignoffs();
+
+const leftScroll = document.getElementById('leftScroll');
+const editorBody = document.getElementById('editorBody');
+const saveAllBtn = document.getElementById('saveAllBtn');
+const signoffCountEl = document.getElementById('signoffCount');
+
+function showToast(msg) {
+  const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
+  t.style.animation='none';t.offsetHeight;t.style.animation='fadeIn .2s ease, fadeOut .3s ease 1.8s forwards';
+  setTimeout(()=>{t.style.display='none';},2200);
 }
+function markDirty(){state.dirty=true;saveAllBtn.classList.add('dirty');}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-function selectGuide(key) {
-  selectedKey = key;
-  const g = editedData.guide[key];
-  if (!g) return;
-  renderItemList();
-  document.getElementById('editorTitle').textContent = 'Edit Guide';
-  document.getElementById('editorHint').textContent = 'Key: ' + key;
+// ═══════════════════════════════════════
+//  LEFT PANEL
+// ═══════════════════════════════════════
+const TAG_SECTIONS = [
+  {tag:'print',label:'3D Printer',dot:'dot-print'},{tag:'laser',label:'Laser Cutter',dot:'dot-laser'},
+  {tag:'general',label:'General',dot:'dot-general'},{tag:'admin',label:'Admin',dot:'dot-admin'},{tag:'inv',label:'Inventory',dot:'dot-inv'},
+];
+function getNames(id){return (signoffs[id]||[]).map(s=>s.name);}
 
-  const hasSteps = !!g.steps;
-  const stepsHtml = hasSteps ? `
-    <div class="field-group" style="margin-top:8px;">
-      <div class="field-label">Steps (${g.steps.length} steps)</div>
-      ${g.steps.map((s, i) => `
-        <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;">
-          <span style="color:var(--accent);font-weight:700;min-width:20px;">${i+1}</span>
-          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-            <input class="field-input" value="${escAttr(s.en||'')}" onchange="updateGuideStep('${key}',${i},'en',this.value)" placeholder="EN step" style="font-size:12px;">
-            <input class="field-input" value="${escAttr(s.tc||'')}" onchange="updateGuideStep('${key}',${i},'tc',this.value)" placeholder="TC step" style="font-size:12px;">
-            <input class="field-input" value="${escAttr(s.sc||'')}" onchange="updateGuideStep('${key}',${i},'sc',this.value)" placeholder="SC step" style="font-size:12px;">
-          </div>
-          <button class="btn btn-reset" onclick="deleteGuideStep('${key}',${i})" style="padding:4px 8px;font-size:10px;">X</button>
+function renderLeftPanel(){
+  let h='';
+  TAG_SECTIONS.forEach(sec=>{
+    const tasks=state.tasks.filter(t=>t.tag===sec.tag);
+    if(!tasks.length)return;
+    h+=`<div class="task-section"><div class="task-section-label"><span class="dot ${sec.dot}"></span>${sec.label}</div>`;
+    tasks.forEach(t=>{
+      const names=getNames(t.id),done=names.length>0,editing=state.editingTaskId===t.id;
+      h+=`<div class="cl-item${done?' done':''}${editing?' editing':''}" id="task-${t.id}" ${editing?'':`onclick="openTaskEditor('${t.id}')"`}>
+        <div class="cl-check">${done?'&#10003;':''}</div>
+        <div class="cl-text">
+          ${esc(t.en)}
+          ${names.length?`<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${esc(n)}</span>`).join('')}</div>`:''}
         </div>
-      `).join('')}
-      <button class="btn" onclick="addGuideStep('${key}')" style="align-self:flex-start;margin-top:8px;">+ Add Step</button>
-    </div>
-  ` : '';
-
-  const tagSelect = g.tag !== undefined ? `
-    <div class="field-group">
-      <div class="field-label">Tag Type</div>
-      <select class="field-select" onchange="updateGuideField('${key}','tag',this.value)">
-        <option value="coming" ${g.tag==='coming'?'selected':''}>Coming Soon</option>
-        <option value="daily" ${g.tag==='daily'?'selected':''}>Daily</option>
-        <option value="" ${!g.tag?'selected':''}>None</option>
+        <button class="cl-edit-btn" onclick="event.stopPropagation();openTaskEditor('${t.id}')">&#9998;</button>
+      </div>`;
+      if(editing)h+=renderTaskEditor(t);
+    });
+    h+=`</div>`;
+  });
+  leftScroll.innerHTML=h||'<div style="padding:24px;color:var(--text-muted);text-align:center;font-size:15px;">No tasks. Click "+ Add Task".</div>';
+  const total=Object.values(signoffs).flat().length;
+  signoffCountEl.textContent=total>0?`${total} check-in${total>1?'s':''} today`:'';
+}
+function renderTaskEditor(t){
+  return `<div class="task-editor-card" onclick="event.stopPropagation()">
+    <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">ID: ${esc(t.id)}</div>
+    <div class="field-label" style="margin-bottom:5px;">TASK TEXT</div>
+    <textarea id="te-en-${t.id}" oninput="markDirty()">${esc(t.en||'')}</textarea>
+    <div class="editor-actions">
+      <select id="te-tag-${t.id}" onchange="markDirty()">
+        <option value="print" ${t.tag==='print'?'selected':''}>print</option>
+        <option value="laser" ${t.tag==='laser'?'selected':''}>laser</option>
+        <option value="general" ${t.tag==='general'?'selected':''}>general</option>
+        <option value="admin" ${t.tag==='admin'?'selected':''}>admin</option>
+        <option value="inv" ${t.tag==='inv'?'selected':''}>inv</option>
       </select>
+      <button class="btn-sm accent" onclick="saveTaskEdit('${t.id}')">Save</button>
+      <button class="btn-sm" onclick="cancelTaskEdit()">Cancel</button>
+      <button class="btn-sm danger" onclick="deleteTask('${t.id}')" style="margin-left:auto;">Delete</button>
     </div>
-  ` : '';
-
-  const body = document.getElementById('editorBody');
-  body.innerHTML = `
-    <div class="lang-grid">
-      ${['en','tc','sc'].map(lang => {
-        const badge = {en:'English',tc:'繁體中文',sc:'简体中文'}[lang];
-        return `<div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="field-group">
-            <div class="field-label"><span class="lang-badge">${badge}</span> Title</div>
-            <input class="field-input" value="${escAttr(g[lang]?.title||'')}" onchange="updateGuideField('${key}','${lang}','title',this.value)" placeholder="Title">
-          </div>
-          <div class="field-group">
-            <div class="field-label">Body</div>
-            <textarea class="field-input" onchange="updateGuideField('${key}','${lang}','body',this.value)" placeholder="Description text">${escHtml(g[lang]?.body||'')}</textarea>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-    ${tagSelect}
-    ${stepsHtml}
-  `;
+  </div>`;
 }
-
-function selectPreset(cat, idx) {
-  selectedKey = `${cat}_${idx}`;
-  const p = editedData.presets[cat]?.[idx];
-  if (!p) return;
-  renderItemList();
-  document.getElementById('editorTitle').textContent = 'Edit Preset';
-  document.getElementById('editorHint').textContent = `Category: ${cat} · Index: ${idx}`;
-
-  const body = document.getElementById('editorBody');
-  body.innerHTML = `
-    <div class="field-group">
-      <div class="field-label">Query Key</div>
-      <input class="field-input" value="${escAttr(p.q||'')}" onchange="updatePresetField('${cat}',${idx},'q',this.value)" placeholder="e.g. 3dprint-overview">
-    </div>
-    <div class="lang-grid">
-      ${['en','tc','sc'].map(lang => {
-        const badge = {en:'English',tc:'繁體中文',sc:'简体中文'}[lang];
-        return `<div class="field-group">
-          <div class="field-label"><span class="lang-badge">${badge}</span></div>
-          <input class="field-input" value="${escAttr(p[lang]||'')}" onchange="updatePresetField('${cat}',${idx},'${lang}',this.value)" placeholder="Button text">
-        </div>`;
-      }).join('')}
-    </div>
-    <div class="field-group" style="margin-top:8px;">
-      <button class="btn btn-reset" onclick="deletePreset('${cat}',${idx})" style="align-self:flex-start;">Delete This Preset</button>
-    </div>
-  `;
+function openTaskEditor(id){state.editingTaskId=id;renderLeftPanel();setTimeout(()=>{const c=document.querySelector('.task-editor-card');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},50);}
+function cancelTaskEdit(){state.editingTaskId=null;renderLeftPanel();}
+function saveTaskEdit(id){
+  const t=state.tasks.find(x=>x.id===id);if(!t)return;
+  t.en=document.getElementById(`te-en-${id}`)?.value||'';
+  t.tag=document.getElementById(`te-tag-${id}`)?.value||'general';
+  state.editingTaskId=null;markDirty();renderLeftPanel();showToast('Task updated. Save to persist.');
+}
+function addNewTask(){
+  const ids=state.tasks.map(t=>parseInt(t.id.replace('d',''))||0);
+  state.tasks.push({id:'d'+(Math.max(0,...ids)+1),tag:'general',en:''});
+  state.editingTaskId=state.tasks[state.tasks.length-1].id;markDirty();renderLeftPanel();
+  setTimeout(()=>{const c=document.querySelector('.task-editor-card');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
+}
+function deleteTask(id){
+  if(!confirm(`Delete "${id}"?`))return;
+  state.tasks=state.tasks.filter(t=>t.id!==id);state.editingTaskId=null;markDirty();renderLeftPanel();
+  showToast('Task deleted.');
 }
 
 // ═══════════════════════════════════════
-//  UPDATE FUNCTIONS
+//  RIGHT PANEL
 // ═══════════════════════════════════════
-function updateTaskField(id, field, value) {
-  const t = editedData.tasks.find(x => x.id === id);
-  if (t) { t[field] = value; renderItemList(); }
+function switchEditorTab(tab){
+  state.editorTab=tab;state.selectedGuide=null;state.selectedSubItem=null;
+  document.querySelectorAll('.editor-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.editor-tab[onclick*="${tab}"]`)?.classList.add('active');
+  renderEditorBody();
 }
-function deleteTask(id) {
-  if (!confirm('Delete this task? This cannot be undone.')) return;
-  editedData.tasks = editedData.tasks.filter(x => x.id !== id);
-  selectedKey = null; renderItemList();
-  document.getElementById('editorBody').innerHTML = '<div class="empty-state">Task deleted. Select another item.</div>';
+function renderEditorBody(){
+  if(state.editorTab==='menu')renderMenuEditor();
+  else renderGuideEditor();
 }
 
-function updateGuideField(key, lang, field, value) {
-  const g = editedData.guide[key];
-  if (g) {
-    if (!g[lang]) g[lang] = {};
-    g[lang][field] = value;
-    renderItemList();
+// ── MENU EDITOR ──
+function renderMenuEditor(){
+  let h=`<div class="menu-editor-grid">`;
+  state.menu.forEach((m,mi)=>{
+    h+=`<div class="menu-editor-section">
+      <div class="me-title" onclick="editMenuCategory(${mi})">${m.title}</div>
+      <div class="me-subtitle" onclick="editMenuCategory(${mi})">${m.subtitle}</div>`;
+    m.subs.forEach((s,si)=>{
+      const type=s.pdf?'PDF':'GUIDE',active=state.selectedSubItem&&state.selectedSubItem.mi===mi&&state.selectedSubItem.si===si;
+      h+=`<div class="me-sub-item${active?' active':''}" onclick="editSubItem(${mi},${si})"><span style="flex:1;">${s.en}</span><span class="me-type">${type}</span></div>`;
+    });
+    h+=`<button class="btn-add-sm" onclick="addSubItem(${mi})">+ Add Item</button></div>`;
+  });
+  h+=`</div>`;
+
+  if(state.selectedSubItem){
+    const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si],keys=Object.keys(state.guide);
+    h+=`<div style="margin-top:24px;padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
+      <div class="form-section-title">Edit: ${s.en} (${state.menu[mi].title})</div>
+      <div class="form-section"><div class="field-label">Label</div><input class="field-input" id="si-en" value="${escAttr(s.en||'')}" oninput="markDirty()"></div>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div><div class="field-label">Type</div><select class="field-select" id="si-type" onchange="markDirty();document.getElementById('si-q-group').style.display=this.value==='guide'?'':'none';document.getElementById('si-pdf-group').style.display=this.value==='pdf'?'':'none';"><option value="guide" ${s.q?'selected':''}>Guide</option><option value="pdf" ${s.pdf?'selected':''}>PDF</option></select></div>
+        <div style="flex:1;min-width:220px;" id="si-q-group" ${s.pdf?'style="display:none"':''}><div class="field-label">Guide Key</div><select class="field-select" id="si-q" onchange="markDirty()">${keys.map(k=>`<option value="${k}" ${s.q===k?'selected':''}>${k}</option>`).join('')}</select></div>
+        <div style="flex:1;min-width:220px;" id="si-pdf-group" ${!s.pdf?'style="display:none"':''}><div class="field-label">PDF Path</div><input class="field-input" id="si-pdf" value="${escAttr(s.pdf||'')}" oninput="markDirty()"></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button class="btn-sm accent" onclick="saveSubItem()">Save</button>
+        <button class="btn-sm" onclick="state.selectedSubItem=null;renderEditorBody();">Close</button>
+        <button class="btn-sm danger" onclick="deleteSubItem()" style="margin-left:auto;">Delete</button>
+      </div>
+    </div>`;
   }
-}
-function updateGuideStep(key, idx, lang, value) {
-  const g = editedData.guide[key];
-  if (g?.steps?.[idx]) { g.steps[idx][lang] = value; }
-}
-function deleteGuideStep(key, idx) {
-  const g = editedData.guide[key];
-  if (g?.steps) { g.steps.splice(idx, 1); selectGuide(key); }
-}
-function addGuideStep(key) {
-  const g = editedData.guide[key];
-  if (g) {
-    if (!g.steps) g.steps = [];
-    g.steps.push({en:'',tc:'',sc:''});
-    selectGuide(key);
+  if(state.editingCategory!=null){
+    const m=state.menu[state.editingCategory];
+    h+=`<div style="margin-top:24px;padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
+      <div class="form-section-title">Edit Category: ${m.title}</div>
+      <div class="form-section"><div class="field-label">Title</div><input class="field-input" id="mc-title" value="${escAttr(m.title||'')}" oninput="markDirty()"></div>
+      <div class="form-section"><div class="field-label">Subtitle</div><input class="field-input" id="mc-sub" value="${escAttr(m.subtitle||'')}" oninput="markDirty()"></div>
+      <button class="btn-sm accent" onclick="saveMenuCategory()">Save</button>
+      <button class="btn-sm" onclick="state.editingCategory=null;renderEditorBody();">Close</button>
+    </div>`;
   }
+  editorBody.innerHTML=h;
 }
+function editMenuCategory(mi){state.editingCategory=mi;state.selectedSubItem=null;renderEditorBody();}
+function saveMenuCategory(){
+  const mi=state.editingCategory;if(mi==null)return;
+  state.menu[mi].title=document.getElementById('mc-title')?.value||'';
+  state.menu[mi].subtitle=document.getElementById('mc-sub')?.value||'';
+  state.editingCategory=null;markDirty();renderEditorBody();showToast('Category updated.');
+}
+function editSubItem(mi,si){state.selectedSubItem={mi,si};state.editingCategory=null;renderEditorBody();}
+function saveSubItem(){
+  const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si];
+  s.en=document.getElementById('si-en')?.value||'';
+  const type=document.getElementById('si-type')?.value;
+  if(type==='pdf'){delete s.q;s.pdf=document.getElementById('si-pdf')?.value||'';}
+  else{delete s.pdf;s.q=document.getElementById('si-q')?.value||'';}
+  markDirty();showToast('Sub-item saved.');renderEditorBody();
+}
+function deleteSubItem(){if(!confirm('Delete?'))return;const{mi,si}=state.selectedSubItem;state.menu[mi].subs.splice(si,1);state.selectedSubItem=null;markDirty();renderEditorBody();}
+function addSubItem(mi){state.menu[mi].subs.push({en:'New Item',q:Object.keys(state.guide)[0]||'training'});markDirty();renderEditorBody();}
 
-function updatePresetField(cat, idx, field, value) {
-  const p = editedData.presets[cat]?.[idx];
-  if (p) { p[field] = value; renderItemList(); }
+// ── GUIDES EDITOR ──
+function renderGuideEditor(){
+  const keys=Object.keys(state.guide);
+  let h=`<div style="display:flex;gap:18px;height:100%;"><div style="width:300px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--border);padding-right:12px;">`;
+  h+=`<button class="btn-add-sm" onclick="addNewGuide()" style="margin-bottom:12px;">+ New Guide</button>`;
+  keys.forEach(k=>{
+    const g=state.guide[k],active=state.selectedGuide===k;
+    h+=`<div class="guide-list-item${active?' active':''}" onclick="selectGuide('${k}')"><span class="g-title-preview">${g.title||k}</span></div>`;
+  });
+  h+=`</div><div style="flex:1;overflow-y:auto;">`;
+  if(state.selectedGuide&&state.guide[state.selectedGuide])h+=renderGuideDetail(state.selectedGuide,state.guide[state.selectedGuide]);
+  else h+=`<div class="empty-state">Select a guide to edit.</div>`;
+  h+=`</div></div>`;editorBody.innerHTML=h;
 }
-function deletePreset(cat, idx) {
-  if (!confirm('Delete this preset?')) return;
-  editedData.presets[cat].splice(idx, 1);
-  selectedKey = null; renderItemList();
-  document.getElementById('editorBody').innerHTML = '<div class="empty-state">Preset deleted. Select another item.</div>';
+function renderGuideDetail(k,g){
+  const hasSteps=g.steps&&Array.isArray(g.steps),hasLinks=g.links,hasEquip=g.equipment;
+  let h=`<div class="form-section-title" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);margin-bottom:18px;">${esc(k)}</div>`;
+  h+=`<div class="form-section"><div class="field-label">Title</div><input class="field-input" id="g-title" value="${escAttr(g.title||'')}" oninput="markDirty()"></div>`;
+  h+=`<div class="form-section"><div class="field-label">Body</div><textarea class="field-textarea" id="g-body" oninput="markDirty()">${esc(g.body||'')}</textarea></div>`;
+  h+=`<div class="form-section"><div class="field-label">Tag</div><select class="field-select" id="g-tag" style="max-width:200px;" onchange="markDirty()"><option value="" ${!g.tag?'selected':''}>(none)</option><option value="coming" ${g.tag==='coming'?'selected':''}>coming</option><option value="daily" ${g.tag==='daily'?'selected':''}>daily</option><option value="warning" ${g.tag==='warning'?'selected':''}>warning</option></select></div>`;
+  if(hasSteps){
+    h+=`<div class="form-section"><div class="form-section-title">Steps</div>`;
+    g.steps.forEach((s,i)=>{h+=`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(s)}" id="st-${i}" oninput="markDirty()" placeholder="Step text"></div><button class="step-del" onclick="deleteStep(${i})">&times;</button></div>`;});
+    h+=`<button class="btn-add-sm" onclick="addStep()">+ Add Step</button></div>`;
+  }
+  if(hasLinks){
+    h+=`<div class="form-section"><div class="form-section-title">Links</div>`;
+    g.links.forEach((lk,i)=>{h+=`<div style="display:flex;gap:8px;margin-bottom:5px;align-items:center;"><input class="field-input" value="${escAttr(lk)}" id="lk-${i}" oninput="markDirty()" style="flex:1;"><button class="step-del" onclick="deleteLink(${i})">&times;</button></div>`;});
+    h+=`<button class="btn-add-sm" onclick="addLink()">+ Add Link</button></div>`;
+  }
+  if(hasEquip){
+    h+=`<div class="form-section"><div class="form-section-title">Equipment</div>`;
+    g.equipment.forEach((eq,i)=>{h+=`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(eq.en||'')}" id="eq-${i}-en" oninput="markDirty()" placeholder="Name"><input value="${escAttr(eq.q||'')}" id="eq-${i}-q" oninput="markDirty()" placeholder="Query key" style="margin-top:6px;"></div><button class="step-del" onclick="deleteEquip(${i})">&times;</button></div>`;});
+    h+=`<button class="btn-add-sm" onclick="addEquip()">+ Add Equipment</button></div>`;
+  }
+  h+=`<div style="margin-top:20px;display:flex;gap:10px;"><button class="btn-sm accent" onclick="saveGuideDetail('${k}')">Save</button><button class="btn-sm danger" onclick="deleteGuide('${k}')">Delete</button></div>`;
+  return h;
 }
-
-// ═══════════════════════════════════════
-//  TAB SWITCHING
-// ═══════════════════════════════════════
-function switchTab(tab) {
-  currentTab = tab; selectedKey = null;
-  document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.sidebar-tab[onclick*="${tab}"]`)?.classList.add('active');
-  document.getElementById('editorTitle').textContent = 'Select an item to edit';
-  document.getElementById('editorHint').textContent = '';
-  document.getElementById('editorBody').innerHTML = '<div class="empty-state">Select a task, guide, or preset from the sidebar to edit.</div>';
-  renderItemList();
+function selectGuide(k){state.selectedGuide=k;renderEditorBody();}
+function saveGuideDetail(k){
+  const g=state.guide[k];
+  g.title=document.getElementById('g-title')?.value||'';
+  g.body=document.getElementById('g-body')?.value||'';
+  const tagVal=document.getElementById('g-tag')?.value||'';if(tagVal)g.tag=tagVal;else delete g.tag;
+  if(g.steps)g.steps=g.steps.map((_,i)=>document.getElementById(`st-${i}`)?.value||'');
+  if(g.links)g.links=g.links.map((_,i)=>document.getElementById(`lk-${i}`)?.value||'').filter(Boolean);
+  if(g.equipment)g.equipment.forEach((eq,i)=>{eq.en=document.getElementById(`eq-${i}-en`)?.value||'';eq.q=document.getElementById(`eq-${i}-q`)?.value||'';});
+  markDirty();showToast(`Guide "${k}" saved.`);
 }
+function addStep(){const g=state.guide[state.selectedGuide];if(!g.steps)g.steps=[];g.steps.push('');markDirty();renderEditorBody();}
+function deleteStep(i){state.guide[state.selectedGuide].steps.splice(i,1);markDirty();renderEditorBody();}
+function addLink(){const g=state.guide[state.selectedGuide];if(!g.links)g.links=[];g.links.push('');markDirty();renderEditorBody();}
+function deleteLink(i){state.guide[state.selectedGuide].links.splice(i,1);markDirty();renderEditorBody();}
+function addEquip(){const g=state.guide[state.selectedGuide];if(!g.equipment)g.equipment=[];g.equipment.push({en:'',q:''});markDirty();renderEditorBody();}
+function deleteEquip(i){state.guide[state.selectedGuide].equipment.splice(i,1);markDirty();renderEditorBody();}
+function addNewGuide(){
+  const key=prompt('Enter new guide key:');if(!key)return;
+  if(state.guide[key]){alert('That key already exists.');return;}
+  state.guide[key]={title:'',body:'',steps:[],tag:'coming'};state.selectedGuide=key;markDirty();renderEditorBody();
+}
+function deleteGuide(k){if(!confirm(`Delete "${k}"?`))return;delete state.guide[k];state.selectedGuide=null;markDirty();renderEditorBody();}
 
 // ═══════════════════════════════════════
 //  SAVE / RESET
 // ═══════════════════════════════════════
-function saveAll() {
-  try {
-    localStorage.setItem('maker_lab_staff_tasks', JSON.stringify(editedData.tasks));
-    localStorage.setItem('maker_lab_staff_guide', JSON.stringify(editedData.guide));
-    localStorage.setItem('maker_lab_staff_presets', JSON.stringify(editedData.presets));
-    showToast('All changes saved. Student Assistants will see the updated content.');
-  } catch(e) {
-    showToast('Error saving. Please try again.');
-  }
+function saveAll(){
+  saveToStorage('maker_lab_staff_tasks',state.tasks);
+  saveToStorage('maker_lab_staff_guide',state.guide);
+  saveToStorage('maker_lab_staff_menu',state.menu);
+  state.dirty=false;saveAllBtn.classList.remove('dirty');showToast('All changes saved!');
 }
-
-function resetAll() {
-  if (!confirm('Reset ALL tasks, guides, and presets to defaults? This cannot be undone.')) return;
-  editedData.tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
-  editedData.guide = JSON.parse(JSON.stringify(DEFAULT_GUIDE));
-  editedData.presets = JSON.parse(JSON.stringify(DEFAULT_PRESETS));
-  selectedKey = null;
-  renderItemList();
-  document.getElementById('editorBody').innerHTML = '<div class="empty-state">All data reset to defaults. Click Save to apply.</div>';
-  showToast('Reset to defaults. Click "Save All Changes" to apply.');
+function resetAll(){
+  if(!confirm('Reset ALL data to defaults?'))return;
+  state.tasks=JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  state.guide=JSON.parse(JSON.stringify(DEFAULT_GUIDE));
+  state.menu=JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU));
+  state.editingTaskId=null;state.selectedGuide=null;state.selectedSubItem=null;
+  markDirty();renderLeftPanel();renderEditorBody();showToast('Reset. Click Save All to persist.');
 }
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveAll();}});
+window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
+window.addEventListener('storage',e=>{if(e.key==='maker_lab_signoffs'){loadSignoffs();renderLeftPanel();}});
 
-// ═══════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════
-function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function escAttr(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg; toast.style.display = 'block';
-  toast.style.animation = 'none'; toast.offsetHeight;
-  toast.style.animation = 'fadeIn .2s ease, fadeOut .3s ease 1.8s forwards';
-  setTimeout(() => { toast.style.display = 'none'; }, 2100);
-}
-
-// Keyboard shortcut
-document.addEventListener('keydown', function(e) {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveAll(); }
-});
-
-// ═══════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════
-renderItemList();
+switchEditorTab('menu');
+renderLeftPanel();
 </script>
 </body>
 </html>

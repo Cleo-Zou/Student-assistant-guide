@@ -1,1397 +1,572 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>IE Maker Lab · Student Assistant Guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:           #09090b;
-    --surface:      #111113;
-    --card:         rgba(255,255,255,0.025);
-    --card-hover:   rgba(255,255,255,0.045);
-    --border:       rgba(255,255,255,0.07);
-    --border-hover: rgba(255,255,255,0.13);
-    --text:         #fafafa;
-    --text-secondary: #a1a1aa;
-    --text-muted:   #71717a;
-    --accent:       #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-muted: rgba(59,130,246,0.12);
-    --success:      #22c55e;
-    --warning:      #eab308;
-    --danger:       #ef4444;
-    --radius:       8px;
-    --radius-sm:    6px;
-    --font-base:    16px;
+    --bg: #09090b; --surface: #111113;
+    --card: rgba(255,255,255,0.025); --card-hover: rgba(255,255,255,0.045);
+    --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.13);
+    --text: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a;
+    --accent: #3b82f6; --accent-hover: #2563eb; --accent-muted: rgba(59,130,246,0.12);
+    --success: #22c55e; --warning: #eab308; --danger: #ef4444;
+    --radius: 8px; --radius-sm: 6px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: 'Manrope', 'Noto Sans TC', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100dvh;
-    display: flex;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    font-size: var(--font-base);
-    letter-spacing: -0.01em;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    height: 100dvh; display: flex; overflow: hidden;
+    font-size: 14px; letter-spacing: -0.01em;
   }
-
-  /* ── Background glow layers ── */
   .bg-grid {
-    position: fixed; inset: 0;
-    pointer-events: none; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
     background-size: 60px 60px;
     mask-image: radial-gradient(ellipse 80% 60% at 30% 50%, black 30%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 30% 50%, black 30%, transparent 70%);
-  }
-  .ambient-glow {
-    position: fixed;
-    left: 80px; top: 50%;
-    transform: translateY(-50%);
-    width: 700px; height: 500px;
-    background: radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-    filter: blur(60px);
-  }
-  .edge-glow {
-    position: fixed; inset: 0;
-    pointer-events: none; z-index: 0;
-    background:
-      radial-gradient(ellipse 100% 350px at 50% 0%,   rgba(59,130,246,0.2) 0%, transparent 40%),
-      radial-gradient(ellipse 100% 280px at 50% 100%, rgba(59,130,246,0.14) 0%, transparent 40%),
-      radial-gradient(ellipse 350px 100% at 0% 50%,   rgba(59,130,246,0.2) 0%, transparent 40%),
-      radial-gradient(ellipse 280px 100% at 100% 50%, rgba(59,130,246,0.14) 0%, transparent 40%);
   }
 
-  /* ── Hover glow for interactive elements ── */
-  .cl-item, .preset-btn, .training-item, .cat-tab, .icon-btn, .feedback-btn, .lang-btn {
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    position: relative; z-index: 1; width: 360px; min-width: 360px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; height: 100dvh;
+  }
+  .left-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .left-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .left-header .subtitle { font-size: 11px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .reset-btn {
+    margin-top: 10px; padding: 5px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
+    background: transparent; color: var(--text-muted); font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .reset-btn:hover { color: var(--danger); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
+  .left-scroll { flex:1; overflow-y: auto; padding: 8px 14px 14px; }
+  .left-scroll::-webkit-scrollbar { width: 4px; }
+  .left-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+  .task-section { margin-top: 14px; }
+  .task-section:first-child { margin-top: 4px; }
+  .task-section-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 0 4px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-print { background: var(--accent); } .dot-laser { background: var(--warning); } .dot-general { background: var(--text-muted); }
+  .cl-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px;
+    border-radius: 6px; font-size: 13px; cursor: pointer; transition: background .12s; line-height: 1.5;
     position: relative; isolation: isolate;
   }
-  .cl-item::before, .preset-btn::before, .training-item::before,
-  .cat-tab::before, .icon-btn::before, .feedback-btn::before, .lang-btn::before {
-    content: '';
-    position: absolute; inset: -2px;
-    border-radius: inherit;
-    background: rgba(59,130,246,0);
-    filter: blur(8px);
-    z-index: -1;
-    transition: background 0.35s ease;
-  }
-  .cl-item:hover::before, .preset-btn:hover::before, .training-item:hover::before,
-  .cat-tab:hover::before, .icon-btn:hover::before, .feedback-btn:hover::before,
-  .lang-btn:hover::before {
-    background: rgba(59,130,246,0.2);
-  }
-
-  /* ── LEFT SIDEBAR ── */
-  .left-panel {
-    position: relative; z-index: 1;
-    width: 360px;
-    min-width: 360px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-  }
-  .left-header {
-    padding: 28px 20px 20px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    text-align: center;
-  }
-  .left-header .title {
-    font-family: 'Libre Franklin', 'Franklin Gothic Heavy', 'Franklin Gothic', 'Helvetica Neue', sans-serif;
-    font-weight: 900;
-    font-size: 26px;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    line-height: 1;
-  }
-  .left-header .subtitle {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 6px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .reset-btn {
-    margin-top: 10px;
-    padding: 4px 14px;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s ease;
-  }
-  .reset-btn:hover {
-    color: var(--danger);
-    border-color: rgba(239,68,68,0.3);
-    background: rgba(239,68,68,0.06);
-  }
-  .left-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 14px 14px;
-  }
-  .left-scroll::-webkit-scrollbar { width: 4px; }
-  .left-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.08);
-    border-radius: 4px;
-  }
-  .left-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.14);
-  }
-
-  .task-section {
-    margin-top: 16px;
-  }
-  .task-section:first-child { margin-top: 6px; }
-  .task-section-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0 4px;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .task-section-label .dot {
-    width: 7px; height: 7px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-  .dot-print  { background: var(--accent); }
-  .dot-laser  { background: var(--warning); }
-  .dot-general{ background: var(--text-muted); }
-
-  .cl-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 8px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background .12s;
-    line-height: 1.5;
-  }
   .cl-item:hover { background: var(--card-hover); }
-  .cl-item:active { background: rgba(255,255,255,0.06); }
+  .cl-item::before { content:''; position:absolute; inset:-2px; border-radius:inherit; background:rgba(59,130,246,0); filter:blur(8px); z-index:-1; transition:background .35s; }
+  .cl-item:hover::before { background:rgba(59,130,246,0.2); }
   .cl-check {
-    width: 20px; height: 20px;
-    border-radius: 4px;
-    border: 1.5px solid rgba(255,255,255,0.18);
-    flex-shrink: 0; margin-top: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    transition: all .15s;
-    color: transparent;
+    width:20px; height:20px; border-radius:50%; border:2px solid var(--border);
+    flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;
+    font-size:11px; transition:all .15s; color:transparent;
   }
-  .cl-title { font-weight: 600; }
-  .cl-item.done .cl-check {
-    background: var(--success);
-    border-color: var(--success);
-    color: #fff;
-  }
-  .cl-item.done .cl-title { color: var(--text-muted); text-decoration: line-through; }
-  .cl-tag {
-    display: inline-block;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-top: 4px;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-  }
-  .cl-tag.print   { background: rgba(59,130,246,0.10); color: var(--accent); }
-  .cl-tag.laser   { background: rgba(234,179,8,0.10);  color: var(--warning); }
-  .cl-tag.general { background: rgba(161,161,170,0.10); color: var(--text-secondary); }
-  .cl-tag.admin   { background: rgba(239,68,68,0.10);  color: var(--danger); }
-  .cl-tag.inv     { background: rgba(34,197,94,0.10);  color: var(--success); }
-
-  .left-footer {
-    padding: 12px 16px;
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: center;
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  /* ── RIGHT PANEL ── */
-  .right-panel {
-    position: relative; z-index: 1;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    height: 100dvh;
-    background: var(--bg);
-  }
-
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-shrink: 0;
-  }
-  .header-back {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    text-decoration: none;
-    letter-spacing: 0.04em;
-    transition: color 0.2s ease;
-    flex-shrink: 0;
-    padding: 4px 0;
-  }
-  .header-back:hover { color: var(--text); }
-  .header-logo {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    font-weight: 800;
-    flex-shrink: 0;
-    color: #fff;
-    letter-spacing: -0.5px;
-  }
-  .header-info { flex:1; min-width:0; }
-  .header-title {
-    font-weight: 700; font-size: 17px;
-    letter-spacing: -0.02em;
-  }
-  .header-subtitle {
-    font-size: 13px; color: var(--text-muted); margin-top: 2px;
-    font-weight: 500;
-  }
-  .header-actions { display:flex; gap:8px; flex-shrink:0; align-items:center; }
-
-  /* Language switcher */
-  .lang-switcher {
-    display: flex;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .lang-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    font-family: inherit;
-    transition: all .15s;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-  .lang-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-  .lang-btn.active {
-    background: var(--accent);
-    color: #fff;
-  }
-  .lang-btn + .lang-btn {
-    border-left: 1px solid var(--border);
-  }
-
-  .icon-btn {
-    height: 32px;
-    padding: 0 14px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all .15s;
-    font-family: inherit;
-  }
-  .icon-btn:hover {
-    background: rgba(255,255,255,0.04);
-    color: var(--text);
-    border-color: var(--border-hover);
-  }
-
-  /* Category tabs */
-  .category-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 14px 20px 0;
-    overflow-x: auto;
-    flex-shrink: 0;
-    scrollbar-width: none;
-  }
-  .category-tabs::-webkit-scrollbar { display:none; }
-  .cat-tab {
-    padding: 7px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    white-space: nowrap;
-    cursor: pointer;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--text-secondary);
-    font-family: inherit;
-    transition: all .15s;
-    flex-shrink: 0;
-    font-weight: 500;
-  }
-  .cat-tab:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-  .cat-tab.active {
-    background: rgba(255,255,255,0.06);
-    color: var(--text);
-    border-color: var(--border);
-  }
-
-  /* Chat area */
-  .chat-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    scroll-behavior: smooth;
-  }
-  .chat-container::-webkit-scrollbar { width: 5px; }
-  .chat-container::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.08);
-    border-radius: 4px;
-  }
-  .chat-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.14);
-  }
-
-  /* Bubbles */
-  .bubble-row {
-    display:flex;
-    gap: 10px;
-    animation: fadeIn .2s ease;
-    max-width: 100%;
-  }
-  .bubble-row.user { flex-direction: row-reverse; }
-  .bubble-avatar {
-    width: 32px; height: 32px;
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 800;
-    flex-shrink: 0;
-    color: #fff;
-    letter-spacing: -0.3px;
-  }
-  .bubble-avatar.bot {
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  }
-  .bubble-avatar.user {
-    background: rgba(255,255,255,0.10);
-    color: var(--text-secondary);
-  }
-  .bubble {
-    max-width: 82%;
-    padding: 14px 18px;
-    border-radius: var(--radius);
-    font-size: var(--font-base);
-    line-height: 1.65;
-    word-break: break-word;
-  }
-  .bubble.bot {
-    background: rgba(255,255,255,0.025);
-    border: 1px solid var(--border);
-    border-bottom-left-radius: 4px;
-  }
-  .bubble.user {
-    background: var(--accent);
-    color: #fff;
-    border-bottom-right-radius: 4px;
-  }
-
-  /* Guide cards */
-  .guide-card {
-    margin-top: 8px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    font-size: var(--font-base);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .guide-card .g-title {
-    font-weight: 700;
-    font-size: 17px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    letter-spacing: -0.015em;
-  }
-  .guide-card .g-row {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-  }
-  .guide-card .g-num {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 14px;
-    min-width: 24px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .guide-card .g-tip {
-    background: rgba(234,179,8,0.06);
-    border-left: 2px solid var(--warning);
-    padding: 10px 14px;
-    border-radius: 0 6px 6px 0;
-    font-size: 14px;
-    color: #fde68a;
-    line-height: 1.55;
-  }
-  .tag-chip {
-    display: inline-block;
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 5px;
-    margin-top: 2px;
-    font-weight: 500;
-  }
-  .tag-chip.coming { background: rgba(59,130,246,0.10); color: var(--accent); }
-  .tag-chip.daily  { background: rgba(234,179,8,0.10);  color: var(--warning); }
-
-  /* Training grid */
-  .training-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-    gap: 8px;
-    margin-top: 6px;
-  }
-  .training-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 15px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all .15s;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    font-family: inherit;
-    color: var(--text);
-  }
-  .training-item:hover { background: var(--card-hover); border-color: var(--border-hover); }
-  .training-item .t-name { font-weight: 600; font-size: 14px; }
-
-  /* Preset buttons */
-  .preset-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 8px;
-    margin-top: 14px;
-  }
-  .preset-btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: var(--radius);
-    padding: 13px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all .15s;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    font-family: inherit;
-    line-height: 1.45;
-  }
-  .preset-btn:hover { background: var(--card-hover); border-color: var(--border-hover); }
-  .preset-btn:active { background: rgba(255,255,255,0.06); }
-
-  /* Welcome */
-  .welcome-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px 24px;
-    animation: fadeIn .25s ease;
-  }
-  .welcome-card h2 {
-    font-size: 18px; font-weight: 700;
-    margin-bottom: 8px; letter-spacing: -0.02em;
-  }
-  .welcome-card p {
-    color: var(--text-secondary); font-size: 15px;
-    margin-bottom: 10px; line-height: 1.65;
-  }
-  .welcome-card .hint {
-    font-size: 13px; color: var(--text-muted);
-    margin-top: 4px; margin-bottom: 0;
-  }
-
-  /* Input */
-  .input-area {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 14px 20px 18px;
-    flex-shrink: 0;
-  }
-  .input-row {
-    display: flex; gap: 8px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 5px; align-items: center;
-    transition: border-color .15s;
-  }
-  .input-row:focus-within { border-color: var(--accent); }
-  .input-row input {
-    flex: 1; min-width: 0;
-    background: transparent; border: none; outline: none;
-    color: var(--text);
-    font-size: 16px; padding: 10px 14px;
-    font-family: inherit;
-    letter-spacing: -0.01em;
-  }
-  .input-row input::placeholder { color: var(--text-muted); }
-  .send-btn {
-    height: 40px; border-radius: 6px;
-    border: none;
-    background: var(--accent);
-    color: #fff;
-    cursor: pointer;
-    font-size: 14px; font-weight: 700;
-    flex-shrink: 0;
-    padding: 0 22px;
-    display: flex; align-items: center; justify-content: center;
-    transition: background .15s;
-    font-family: inherit;
-    letter-spacing: -0.01em;
-  }
-  .send-btn:hover { background: var(--accent-hover); }
-  .send-btn:active { background: #1d4ed8; }
-
-  .quick-hint {
-    font-size: 12px; color: var(--text-muted);
-    margin-top: 10px; text-align: center;
-  }
+  .cl-text { flex:1; min-width:0; }
+  .cl-title { font-weight:600; }
+  .cl-item.done .cl-check { background:var(--success); border-color:var(--success); color:#fff; }
+  .cl-item.done .cl-title { color:var(--text-muted); text-decoration:line-through; }
+  .cl-signoffs { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+  .cl-signoff-chip { font-size:10px; padding:2px 8px; border-radius:10px; background:rgba(255,255,255,0.06); color:var(--text-muted); }
+  .left-footer { padding:10px 18px; border-top:1px solid var(--border); flex-shrink:0; font-size:11px; color:var(--text-muted); text-align:center; }
 
   /* Name signoff modal */
-  .name-modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65);
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.2s ease;
-  }
-  .name-modal-overlay.hidden { display: none; }
-  .name-modal {
-    background: #18181b;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    padding: 28px 30px;
-    min-width: 340px;
-    max-width: 400px;
-    font-family: 'Manrope', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
-  }
-  .name-modal h4 {
-    font-size: 15px; font-weight: 700;
-    margin-bottom: 6px;
-    letter-spacing: -0.01em;
-  }
-  .name-modal .task-preview {
-    font-size: 13px; color: var(--text-muted);
-    margin-bottom: 16px;
-    line-height: 1.4;
-  }
-  .name-modal input {
-    width: 100%;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s;
-    margin-bottom: 14px;
-  }
-  .name-modal input:focus { border-color: var(--accent); }
-  .name-modal input::placeholder { color: var(--text-muted); }
-  .name-modal .modal-actions {
-    display: flex; gap: 8px;
-  }
-  .name-modal .btn-confirm {
-    flex: 1;
-    padding: 9px 0;
-    border: none;
-    border-radius: 6px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .name-modal .btn-confirm:hover { background: var(--accent-hover); }
-  .name-modal .btn-cancel {
-    flex: 1;
-    padding: 9px 0;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .name-modal .btn-cancel:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .name-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:200; display:flex; align-items:center; justify-content:center; }
+  .name-modal-overlay.hidden { display:none; }
+  .name-modal { background:#18181b; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:24px 28px; min-width:320px; max-width:380px; }
+  .name-modal h4 { font-size:15px; font-weight:700; margin-bottom:6px; }
+  .name-modal .task-preview { font-size:13px; color:var(--text-secondary); margin-bottom:14px; line-height:1.5; }
+  .name-modal input { width:100%; padding:10px 14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:14px; font-family:inherit; outline:none; }
+  .name-modal input:focus { border-color:var(--accent); }
+  .modal-actions { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
+  .btn-cancel { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; background:transparent; border:1px solid var(--border); color:var(--text-secondary); font-family:inherit; }
+  .btn-confirm { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; background:var(--accent); border:none; color:#fff; font-family:inherit; }
+  .btn-confirm:hover { background:var(--accent-hover); }
 
-  /* Signoff names under task */
-  .cl-signoffs {
-    margin-top: 4px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-  }
-  .cl-signoff-chip {
-    font-size: 10px;
-    padding: 1px 7px;
-    border-radius: 4px;
-    background: rgba(34,197,94,0.12);
-    color: var(--success);
-    font-weight: 500;
-  }
+  /* ── RIGHT PANEL ── */
+  .right-panel { position:relative; z-index:1; flex:1; display:flex; flex-direction:column; min-width:0; background:var(--bg); }
+  .header { display:flex; align-items:center; gap:14px; padding:14px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .header .home-link { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); text-decoration:none; letter-spacing:0.04em; }
+  .header .home-link:hover { color:var(--text); }
+  .header-logo { width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,var(--accent),#06b6d4); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; color:#fff; flex-shrink:0; }
+  .header-info { flex:1; min-width:0; }
+  .header-title { font-size:16px; font-weight:700; letter-spacing:-0.02em; }
+  .header-subtitle { font-size:11px; color:var(--text-muted); }
+  .icon-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-family:inherit; transition:all .15s; }
+  .icon-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); border-color:var(--border-hover); }
 
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 100px; left: 50%;
-    transform: translateX(-50%);
-    background: #18181b;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 11px 22px; border-radius: 8px;
-    font-size: 14px; z-index: 100;
-    animation: fadeIn .2s ease, fadeOut .3s ease 1.5s forwards;
-    pointer-events: none;
-  }
+  .chat-container { flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
+  .chat-container::-webkit-scrollbar { width:5px; }
+  .chat-container::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:4px; }
 
-  /* Typing */
-  .typing-dots { display:flex; gap:4px; padding: 4px 0; }
-  .typing-dots span {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--text-muted);
-    animation: bounce 1.2s infinite;
-  }
-  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  .welcome-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px 24px; text-align:center; }
+  .welcome-card h2 { font-size:22px; font-weight:700; margin-bottom:10px; }
+  .welcome-card p { color:var(--text-secondary); font-size:17px; }
 
-  /* Feedback */
-  .feedback-row {
-    display: flex; gap: 6px;
-    margin-top: 12px;
-    font-size: 13px; color: var(--text-muted);
-    align-items: center;
+  .main-menu { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:16px; }
+  .menu-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 20px 24px; display:flex; flex-direction:column; gap:14px; }
+  .menu-section .ms-header { display:flex; flex-direction:column; align-items:center; gap:6px; padding-bottom:16px; border-bottom:1px solid var(--border); text-align:center; }
+  .menu-section .ms-title { font-size:20px; font-weight:700; letter-spacing:-0.02em; }
+  .menu-section .ms-sub { font-size:13px; color:var(--text-muted); }
+  .menu-section .ms-items { display:flex; flex-direction:column; gap:8px; }
+  .ms-item {
+    background:transparent; border:1px solid transparent; color:var(--text-secondary);
+    border-radius:6px; padding:14px 12px; font-size:16px; cursor:pointer;
+    transition:all .15s; text-align:center; font-family:inherit; font-weight:500;
+    position:relative; isolation:isolate;
   }
-  .feedback-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    padding: 4px 13px; border-radius: 5px;
-    cursor: pointer;
-    font-size: 13px; transition: all .15s;
-    font-family: inherit; font-weight: 500;
-  }
-  .feedback-btn:hover {
-    background: rgba(255,255,255,0.04);
-    border-color: var(--border-hover);
-    color: var(--text);
-  }
-  .feedback-btn.active {
-    background: var(--accent-muted);
-    color: var(--accent);
-    border-color: rgba(59,130,246,0.25);
-  }
+  .ms-item:hover { background:rgba(255,255,255,0.03); border-color:var(--border); color:var(--text); }
+  .ms-item:active { background:rgba(255,255,255,0.06); }
 
-  @keyframes fadeIn {
-    from { opacity:0; transform:translateY(6px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  @keyframes fadeOut {
-    to { opacity:0; transform:translateY(-6px) translateX(-50%); }
-  }
-  @keyframes bounce {
-    0%,60%,100% { transform:translateY(0); }
-    30%          { transform:translateY(-6px); }
-  }
+  /* Chat bubbles */
+  .bubble-row { display:flex; gap:10px; animation:fadeIn .2s ease; max-width:100%; }
+  .bubble-avatar { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+  .bubble-avatar.user { background:var(--accent); color:#fff; }
+  .bubble-avatar.bot { background:linear-gradient(135deg,var(--accent),#06b6d4); color:#fff; }
+  .bubble-row.user { justify-content:flex-end; }
+  .bubble { max-width:78%; padding:12px 18px; border-radius:12px; font-size:14px; line-height:1.6; }
+  .bubble.user { background:var(--accent); color:#fff; border-bottom-right-radius:4px; }
+  .bubble.bot { background:var(--card); border:1px solid var(--border); border-bottom-left-radius:4px; }
+  .guide-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; }
+  .guide-card .g-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .g-row { display:flex; gap:10px; align-items:flex-start; margin-top:4px; }
+  .g-num { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+  .tag-chip { display:inline-block; font-size:10px; padding:2px 8px; border-radius:4px; margin-top:10px; font-weight:600; }
+  .tag-chip.coming { background:rgba(59,130,246,0.10); color:var(--accent); }
+  .tag-chip.daily { background:rgba(234,179,8,0.10); color:var(--warning); }
+  .tag-chip.warning { background:rgba(239,68,68,0.10); color:#ef4444; }
+  .typing-dots { display:flex; gap:4px; padding:4px 0; }
+  .typing-dots span { width:7px; height:7px; border-radius:50%; background:var(--text-muted); animation:bounce 1.2s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay:.2s; } .typing-dots span:nth-child(3) { animation-delay:.4s; }
+  @keyframes bounce { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-6px); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  .feedback-row { margin-top:10px; padding-top:8px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px; }
+  .feedback-btn { padding:3px 12px; border-radius:10px; font-size:11px; cursor:pointer; background:transparent; border:1px solid var(--border); color:var(--text-muted); font-family:inherit; transition:all .15s; }
+  .feedback-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+  .feedback-btn.active { background:var(--accent-muted); color:var(--accent); border-color:var(--accent); }
 
-  /* ── Mobile ── */
-  @media (max-width: 860px) {
-    body { flex-direction: column; }
-    .left-panel {
-      width: 100%; min-width: 0; max-height: 40vh;
-      border-right: none; border-bottom: 1px solid var(--border);
-    }
-    .right-panel { height: auto; flex: 1; }
-    .header { padding: 12px 14px; }
-    .header-title { font-size: 15px; }
-    .header-logo { width: 32px; height: 32px; font-size: 12px; }
-    .category-tabs { padding: 10px 14px 0; }
-    .chat-container { padding: 14px 14px; }
-    .input-area { padding: 12px 14px 14px; }
-    .bubble { max-width: 90%; }
-    .preset-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); }
-    .lang-btn { padding: 4px 8px; font-size: 11px; }
+  .toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:#18181b; border:1px solid var(--border); color:var(--text); padding:10px 22px; border-radius:8px; font-size:13px; z-index:100; display:none; pointer-events:none; }
+
+  @media (max-width:860px) {
+    body { flex-direction:column; }
+    .left-panel { width:100%; min-width:0; max-height:40vh; border-right:none; border-bottom:1px solid var(--border); }
+    .right-panel { height:auto; flex:1; }
+    .main-menu { grid-template-columns:1fr; }
+    .chat-container { padding:14px; }
+    .bubble { max-width:90%; }
   }
 </style>
 </head>
 <body>
-
 <div class="bg-grid"></div>
-<div class="ambient-glow"></div>
-<div class="edge-glow"></div>
 
-<!-- ── LEFT SIDEBAR ── -->
+<!-- ── LEFT PANEL ── -->
 <div class="left-panel" id="leftPanel">
   <div class="left-header">
-    <div class="title" data-i18n="leftTitle">DAILY TASKS</div>
-    <div class="subtitle" data-i18n="leftSubtitle">Student Checklist</div>
-    <button class="reset-btn" onclick="resetSignoffs()" data-i18n="resetBtn">Clear All</button>
+    <h2>DAILY TASKS</h2>
+    <div class="subtitle">Student Checklist</div>
+    <button class="reset-btn" onclick="resetSignoffs()">Clear All Check-ins</button>
   </div>
   <div class="left-scroll" id="leftScroll"></div>
-  <div class="left-footer" data-i18n="leftFooter">Tap to check off</div>
+  <div class="left-footer">Tap a task to check in</div>
 </div>
 
 <!-- ── RIGHT PANEL ── -->
 <div class="right-panel">
   <div class="header">
-    <a href="index.html" class="header-back">&larr; Home</a>
+    <a href="index.html" class="home-link">&larr; Home</a>
     <div class="header-logo">IE</div>
     <div class="header-info">
       <div class="header-title">IE Maker Lab</div>
-      <div class="header-subtitle" data-i18n="headerSubtitle">Student Assistant Guide</div>
+      <div class="header-subtitle">Student Assistant Guide</div>
     </div>
-    <div class="header-actions">
-      <div class="lang-switcher" id="langSwitcher">
-        <button class="lang-btn active" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="tc">繁</button>
-        <button class="lang-btn" data-lang="sc">简</button>
-      </div>
-      <button class="icon-btn" onclick="clearChat()" data-i18n="clearBtn">Clear</button>
-    </div>
+    <button class="icon-btn" onclick="clearChat()">Clear</button>
   </div>
-
-  <div class="category-tabs" id="categoryTabs">
-    <button class="cat-tab active" onclick="switchCategory('all')" data-i18n="catAll">All</button>
-    <button class="cat-tab" onclick="switchCategory('3dprint')" data-i18n="cat3d">3D Print</button>
-    <button class="cat-tab" onclick="switchCategory('laser')" data-i18n="catLaser">Laser</button>
-    <button class="cat-tab" onclick="switchCategory('training')" data-i18n="catTraining">Training</button>
-  </div>
-
   <div class="chat-container" id="chatContainer">
     <div class="welcome-card" id="welcomeCard">
-      <h2 data-i18n="welcomeTitle">Welcome to IE Maker Lab</h2>
-      <p data-i18n="welcomeBody">Hello Student Assistant! Select a task or ask me anything about lab duties.</p>
-      <p class="hint" data-i18n="welcomeHint">Try: "3D printer" · "cleaning" · "desiccant" · "laser"</p>
+      <h2>Welcome to IE Maker Lab</h2>
+      <p>Hello Student Assistant! Select a task below.</p>
     </div>
-    <div class="preset-grid" id="presetGrid"></div>
-  </div>
-
-  <div class="input-area">
-    <div class="input-row">
-      <input type="text" id="msgInput"
-        data-i18n-placeholder="inputPlaceholder"
-        placeholder="Ask about lab tasks..."
-        autocomplete="off">
-      <button class="send-btn" onclick="sendMessage()" data-i18n="sendBtn">Send</button>
-    </div>
-    <div class="quick-hint" data-i18n="quickHint">Tap a category tab, preset button, or type your question</div>
+    <div class="main-menu" id="presetGrid"></div>
   </div>
 </div>
 
 <div id="nameModal" class="name-modal-overlay hidden">
   <div class="name-modal" onclick="event.stopPropagation()">
-    <h4 data-i18n="signoffTitle">Task Check-in</h4>
+    <h4>Task Check-in</h4>
     <div class="task-preview" id="signoffTaskPreview"></div>
-    <input type="text" id="signoffNameInput" data-i18n-placeholder="signoffPlaceholder" placeholder="Enter your name" autocomplete="off">
+    <input type="text" id="signoffNameInput" placeholder="Enter your name" autocomplete="off">
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeSignoff()" data-i18n="signoffCancel">Cancel</button>
-      <button class="btn-confirm" onclick="confirmSignoff()" data-i18n="signoffConfirm">Confirm</button>
+      <button class="btn-cancel" onclick="closeSignoff()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmSignoff()">Confirm</button>
     </div>
   </div>
 </div>
 
-<div id="toast" class="toast" style="display:none;"></div>
+<div id="toast" class="toast"></div>
 
 <script>
 // ═══════════════════════════════════════
-//  I18N
-// ═══════════════════════════════════════
-const I18N = {
-  en: {
-    leftTitle:'DAILY TASKS', leftSubtitle:'STUDENT CHECKLIST', leftFooter:'Tap to check off',
-    headerSubtitle:'Student Assistant Guide', clearBtn:'Clear',
-    catAll:'All', cat3d:'3D Print', catLaser:'Laser', catTraining:'Training',
-    welcomeTitle:'Welcome to IE Maker Lab',
-    welcomeBody:'Hello Student Assistant! Select a task or ask me anything about lab duties.',
-    welcomeHint:'Try: "3D printer" · "cleaning" · "desiccant" · "laser"',
-    inputPlaceholder:'Ask about lab tasks...', sendBtn:'Send',
-    quickHint:'Tap a category tab, preset button, or type your question',
-    section3d:'3D Printer', sectionLaser:'Laser Cutter', sectionGeneral:'General',
-    feedbackAsk:'Was this helpful?', feedbackYes:'Yes', feedbackNo:'No',
-    toastThanks:'Thanks for your feedback!', toastImprove:"We'll keep improving!",
-    clearConfirm:'Clear all conversations?',
-    fallbackTitle:'No matching guide found', fallbackTry:'Try these', fallbackHint:'You can also ask the lab supervisor',
-    signoffTitle:'Task Check-in', signoffPlaceholder:'Enter your name', signoffCancel:'Cancel', signoffConfirm:'Confirm',
-    resetBtn:'Clear All', resetConfirm:'Clear all check-ins for today?', resetToast:'All tasks cleared!',
-  },
-  tc: {
-    leftTitle:'日常任務', leftSubtitle:'學生助理檢查清單', leftFooter:'點擊勾選完成',
-    headerSubtitle:'學生助理指南', clearBtn:'清除',
-    catAll:'全部', cat3d:'3D 打印', catLaser:'激光', catTraining:'培訓',
-    welcomeTitle:'歡迎來到 IE Maker Lab',
-    welcomeBody:'學生助理你好！選擇任務或直接問我關於實驗室職責的問題。',
-    welcomeHint:'試試："3D printer" · "清潔" · "除濕" · "laser"',
-    inputPlaceholder:'查詢實驗室工作...', sendBtn:'發送',
-    quickHint:'點擊分類標籤、預設按鈕或輸入問題',
-    section3d:'3D 打印機', sectionLaser:'激光切割機', sectionGeneral:'日常事務',
-    feedbackAsk:'有幫助嗎？', feedbackYes:'是', feedbackNo:'否',
-    toastThanks:'感謝你的回饋！', toastImprove:'我們會持續改進！',
-    clearConfirm:'確定清除所有對話記錄？',
-    fallbackTitle:'沒有找到相關指引', fallbackTry:'試試這些', fallbackHint:'也可向實驗室主管查詢',
-    signoffTitle:'任務簽到', signoffPlaceholder:'輸入你的姓名', signoffCancel:'取消', signoffConfirm:'確認',
-    resetBtn:'全部清除', resetConfirm:'確定清除今日所有簽到記錄？', resetToast:'所有任務已清除！',
-  },
-  sc: {
-    leftTitle:'日常任务', leftSubtitle:'学生助理检查清单', leftFooter:'点击勾选完成',
-    headerSubtitle:'学生助理指南', clearBtn:'清除',
-    catAll:'全部', cat3d:'3D 打印', catLaser:'激光', catTraining:'培训',
-    welcomeTitle:'欢迎来到 IE Maker Lab',
-    welcomeBody:'学生助理你好！选择任务或直接问我关于实验室职责的问题。',
-    welcomeHint:'试试："3D printer" · "清洁" · "除湿" · "laser"',
-    inputPlaceholder:'查询实验室工作...', sendBtn:'发送',
-    quickHint:'点击分类标签、预设按钮或输入问题',
-    section3d:'3D 打印机', sectionLaser:'激光切割机', sectionGeneral:'日常事务',
-    feedbackAsk:'有帮助吗？', feedbackYes:'是', feedbackNo:'否',
-    toastThanks:'感谢你的反馈！', toastImprove:'我们会持续改进！',
-    clearConfirm:'确定清除所有对话记录？',
-    fallbackTitle:'没有找到相关指引', fallbackTry:'试试这些', fallbackHint:'也可向实验室主管查询',
-    signoffTitle:'任务签到', signoffPlaceholder:'输入你的姓名', signoffCancel:'取消', signoffConfirm:'确认',
-    resetBtn:'全部清除', resetConfirm:'确定清除今日所有签到记录？', resetToast:'所有任务已清除！',
-  }
-};
-
-// ═══════════════════════════════════════
-//  DEFAULT DATA
+//  DATA
 // ═══════════════════════════════════════
 const DEFAULT_TASKS = [
-  { id:"d1", tag:"print",   en:"Clean 3D Printer zone, remove waste, check desiccant beads, wash print plates", tc:"清潔 3D 打印區域：清除廢料、檢查除濕顆粒、清洗打印平台", sc:"清洁 3D 打印区域：清除废料、检查除湿颗粒、清洗打印平台" },
-  { id:"d2", tag:"laser",   en:"Clean laser machine workbed and waste materials", tc:"清潔激光機工作台及廢料", sc:"清洁激光机工作台及废料" },
-  { id:"d3", tag:"general", en:"Tidy up and clean workbenches", tc:"整理清潔工作台", sc:"整理清洁工作台" },
-  { id:"d4", tag:"general", en:"Organize tool cabinet and ensure tools are returned", tc:"整理工具櫃並確認工具歸位", sc:"整理工具柜并确认工具归位" },
-  { id:"d5", tag:"admin",   en:"Check Key Management System", tc:"檢查鑰匙管理系統", sc:"检查钥匙管理系统" },
-  { id:"d6", tag:"general", en:"Clean and reorganize display cabinet at WS03 corridor", tc:"清潔整理 WS03 走廊展示櫃", sc:"清洁整理 WS03 走廊展示柜" },
-  { id:"d7", tag:"general", en:"Organize Student Maker Corner and project displays", tc:"整理學生創客角落及項目展示", sc:"整理学生创客角落及项目展示" },
-  { id:"d8", tag:"inv",     en:"Check and refill component cabinet: screws, nuts, capacitors, etc.", tc:"檢查補充零件櫃（螺絲、螺母、電容等）", sc:"检查补充零件柜（螺丝、螺母、电容等）" },
-  { id:"d9", tag:"general", en:"Clean sink area, refill paper towels and soap", tc:"清潔洗手台區域並補充紙巾及洗手液", sc:"清洁洗手台区域并补充纸巾及洗手液" },
-  { id:"d10",tag:"general", en:"Charge batteries for vacuum, drill, screwdriver, etc.", tc:"為無線工具電池充電", sc:"为无线工具电池充电" },
+  { id:"d1", tag:"print",   en:"Clean 3D Printer zone, remove waste, check desiccant beads, wash print plates" },
+  { id:"d2", tag:"laser",   en:"Clean laser machine workbed and waste materials" },
+  { id:"d3", tag:"general", en:"Tidy up and clean workbenches" },
+  { id:"d4", tag:"general", en:"Organize tool cabinet and ensure tools are returned" },
+  { id:"d5", tag:"admin",   en:"Check Key Management System" },
+  { id:"d6", tag:"general", en:"Clean and reorganize display cabinet at WS03 corridor" },
+  { id:"d7", tag:"general", en:"Organize Student Maker Corner and project displays" },
+  { id:"d8", tag:"inv",     en:"Check and refill component cabinet: screws, nuts, capacitors, etc." },
+  { id:"d9", tag:"general", en:"Clean sink area, refill paper towels and soap" },
+  { id:"d10",tag:"general", en:"Charge batteries for vacuum, drill, screwdriver, etc." },
 ];
 
 const DEFAULT_GUIDE = {
   "3dprint-assist": {
-    en: { title:"Assist Students with 3D Printing", body:"Help students level the print bed, load filament, start prints, and troubleshoot common issues." },
-    tc: { title:"協助同學使用 3D 打印機", body:"協助同學調平平台、裝載線材、啟動打印並排查常見問題。" },
-    sc: { title:"协助同学使用 3D 打印机", body:"协助同学调平平台、装载线材、启动打印并排查常见问题。" },
+    title:"Assist Students with 3D Printing",
+    body:"Help students level the print bed, load filament, start prints, and troubleshoot common issues.",
     steps: [
-      { en:"Check and level the print bed", tc:"檢查打印平台是否平整 (bed leveling)", sc:"检查打印平台是否平整 (bed leveling)" },
-      { en:"Help load PLA / PETG filament", tc:"協助裝載 PLA / PETG 線材", sc:"协助装载 PLA / PETG 线材" },
-      { en:"Import STL, slice with correct settings, start print", tc:"導入 STL → 切片軟件設定參數 → 開始打印", sc:"导入 STL → 切片软件设定参数 → 开始打印" },
-      { en:"Monitor first layer adhesion, pause and adjust if needed", tc:"監控首層附著，必要時暫停調整", sc:"监控首层附着，必要时暂停调整" },
-    ], tag: "coming",
+      "Check and level the print bed (bed leveling)",
+      "Help load PLA / PETG filament",
+      "Import STL, slice with correct settings, start print",
+      "Monitor first layer adhesion, pause and adjust if needed",
+    ], tag:"coming"
   },
   "3dprint-desiccant": {
-    en: { title:"Replace 3D Printer Desiccant Beads", body:"Check the desiccant beads in the filament dry box regularly. If they change color (from orange to green/dark), replace or regenerate them." },
-    tc: { title:"更換 3D 打印機除濕顆粒", body:"定期檢查線材乾燥箱內的除濕顆粒。若顆粒變色（由橙色變為綠色/深色），需要更換或再生。" },
-    sc: { title:"更换 3D 打印机除湿颗粒", body:"定期检查线材干燥箱内的除湿颗粒。若颗粒变色（由橙色变为绿色/深色），需要更换或再生。" },
+    title:"Replace 3D Printer Desiccant Beads",
+    body:"Check the desiccant beads in the filament dry box regularly. If they change color, replace or regenerate them.",
     steps: [
-      { en:"Open the filament dry box / container", tc:"打開線材乾燥箱 / 乾燥盒", sc:"打开线材干燥箱 / 干燥盒" },
-      { en:"Check bead color (orange = OK, green/dark = saturated)", tc:"檢查除濕顆粒顏色（橙色=正常，綠色=已吸濕）", sc:"检查除湿颗粒颜色（橙色=正常，绿色=已吸湿）" },
-      { en:"Remove saturated beads, pour in fresh desiccant", tc:"取出已變色的顆粒，倒入新的除濕顆粒", sc:"取出已变色的颗粒，倒入新的除湿颗粒" },
-      { en:"Old beads can be regenerated in microwave (depending on type)", tc:"舊顆粒可用微波爐加熱再生（視類型而定）", sc:"旧颗粒可用微波炉加热再生（视类型而定）" },
-      { en:"Close container tightly, ensure good seal", tc:"蓋緊乾燥盒，確認密封良好", sc:"盖紧干燥盒，确认密封良好" },
-    ], tag: "coming",
+      "Open the filament dry box / container",
+      "Check bead color (orange = OK, green/dark = saturated)",
+      "Remove saturated beads, pour in fresh desiccant",
+      "Old beads can be regenerated in microwave (depending on type)",
+      "Close container tightly, ensure good seal",
+    ], tag:"coming"
   },
   "3dprint-clean": {
-    en: { title:"Clean 3D Printer Zone", body:"Remove waste filament scraps and failed prints. Wash print plates. Wipe down printer surfaces and surrounding area." },
-    tc: { title:"清潔 3D 打印區域", body:"清除廢棄線材碎片和失敗的打印件。清洗打印平台。擦拭打印機表面和周圍區域。" },
-    sc: { title:"清洁 3D 打印区域", body:"清除废弃线材碎片和失败的打印件。清洗打印平台。擦拭打印机表面和周围区域。" },
+    title:"Clean 3D Printer Zone",
+    body:"Keep the printer area clean and organized for safe operation.",
     steps: [
-      { en:"Remove all failed prints and support material from bed", tc:"移除平台上所有廢棄打印件及支撐材料", sc:"移除平台上所有废弃打印件及支撑材料" },
-      { en:"Wash print plates with water or isopropyl alcohol", tc:"用清水或酒精清洗打印平台", sc:"用清水或酒精清洗打印平台" },
-      { en:"Clean filament scraps from floor and table", tc:"清理地面及桌上的線材碎片", sc:"清理地面及桌上的线材碎片" },
-      { en:"Wipe printer exterior, touchscreen, and surrounding area", tc:"擦拭打印機外殼、觸控屏及周圍區域", sc:"擦拭打印机外壳、触控屏及周围区域" },
-      { en:"Check desiccant bead status", tc:"檢查除濕顆粒狀態（參見「更換除濕顆粒」）", sc:"检查除湿颗粒状态（参见「更换除湿颗粒」）" },
-      { en:"Properly dispose of waste (PLA can be recycled)", tc:"妥善丟棄廢料（PLA 可回收處理）", sc:"妥善丢弃废料（PLA 可回收处理）" },
-    ], tag: "daily",
+      "Remove all failed prints and support material from bed",
+      "Wash print plates with water or isopropyl alcohol",
+      "Clean filament scraps from floor and table",
+      "Wipe printer exterior, touchscreen, and surrounding area",
+      "Check desiccant bead status",
+      "Properly dispose of waste (PLA can be recycled)",
+    ], tag:"daily"
   },
   "laser-assist": {
-    en: { title:"Assist Students with Laser Cutting", body:"Help students set up material, adjust focus, configure power/speed settings in LightBurn, and monitor cuts. Always check the fume extractor is running." },
-    tc: { title:"協助同學使用激光切割機", body:"協助同學放置材料、調整焦距、在 LightBurn 中配置功率/速度參數並監控切割過程。務必檢查排煙系統是否運行。" },
-    sc: { title:"协助同学使用激光切割机", body:"协助同学放置材料、调整焦距、在 LightBurn 中配置功率/速度参数并监控切割过程。务必检查排烟系统是否运行。" },
+    title:"Assist Students with Laser Cutter",
+    body:"Help students position material, configure power/speed in LightBurn, and operate the laser safely.",
     steps: [
-      { en:"Ensure fume extractor is on and working", tc:"確認排煙系統已開啟並正常運行", sc:"确认排烟系统已开启并正常运行" },
-      { en:"Help position material and adjust laser focus", tc:"協助放置材料並調整激光頭焦距", sc:"协助放置材料并调整激光头焦距" },
-      { en:"Configure power / speed / passes in LightBurn", tc:"在 LightBurn 設定功率 / 速度 / 次數", sc:"在 LightBurn 设定功率 / 速度 / 次数" },
-      { en:"Start job and monitor throughout (never leave unattended)", tc:"啟動切割並全程監控（不可離開）", sc:"启动切割并全程监控（不可离开）" },
-      { en:"Wait for smoke to clear before opening lid after completion", tc:"完成後等待煙霧排清再打開蓋子", sc:"完成后等待烟雾排清再打开盖子" },
-    ], tag: "coming",
+      "Turn on ventilation and water chiller",
+      "Help place and align material on honeycomb bed",
+      "Set focus using the focus tool",
+      "Configure power/speed in LightBurn software",
+      "Run a test frame, then start the job",
+    ], tag:"coming"
   },
   "laser-clean": {
-    en: { title:"Clean Laser Machine and Waste", body:"Clean the honeycomb bed, remove debris, empty the scrap bin, wipe the lens cover gently, and ensure proper ventilation." },
-    tc: { title:"清潔激光機及廢料", body:"清潔蜂窩平台、移除碎片、清空廢料收集盤、輕輕擦拭鏡頭蓋、確保通風正常。" },
-    sc: { title:"清洁激光机及废料", body:"清洁蜂窝平台、移除碎片、清空废料收集盘、轻轻擦拭镜头盖、确保通风正常。" },
+    title:"Clean Laser Machine and Waste",
+    body:"Clean the honeycomb bed, remove debris, empty the scrap bin, and ensure proper ventilation.",
     steps: [
-      { en:"Turn off laser, wait for it to cool down", tc:"關閉激光機電源，等待冷卻", sc:"关闭激光机电源，等待冷却" },
-      { en:"Empty the scrap bin underneath the honeycomb bed", tc:"清空蜂窩平台下方的廢料收集盤", sc:"清空蜂窝平台下方的废料收集盘" },
-      { en:"Clean debris from honeycomb bed with brush or vacuum", tc:"用刷子或吸塵器清理蜂窩平台上的碎片", sc:"用刷子或吸尘器清理蜂窝平台上的碎片" },
-      { en:"Gently wipe lens cover with lens tissue", tc:"用鏡頭紙輕輕擦拭鏡頭蓋（勿用普通紙巾）", sc:"用镜头纸轻轻擦拭镜头盖（勿用普通纸巾）" },
-      { en:"Wipe machine exterior and surrounding work area", tc:"擦拭機器外部及周圍工作區域", sc:"擦拭机器外部及周围工作区域" },
-      { en:"Check that exhaust duct is clear", tc:"檢查排煙管道是否暢通", sc:"检查排烟管道是否畅通" },
-    ], tag: "daily",
+      "Turn off laser, wait for it to cool down",
+      "Empty the scrap bin underneath the honeycomb bed",
+      "Clean debris from honeycomb bed with brush or vacuum",
+      "Gently wipe lens cover with lens tissue",
+      "Wipe machine exterior and surrounding work area",
+      "Check that exhaust duct is clear",
+    ], tag:"daily"
   },
-  "training": {
-    en: { title:"Self-Training Opportunities", body:"Explore these machines during your shift. Self-training materials available." },
-    tc: { title:"自學培訓機會", body:"在值班期間探索這些機器。自學培訓材料可供查閱。" },
-    sc: { title:"自学培训机会", body:"在值班期间探索这些机器。自学培训材料可供查阅。" },
-    equipment: [
-      { en:"3D Printer", tc:"3D 打印機", sc:"3D 打印机", q:"3dprint-assist" },
-      { en:"3D Scanner", tc:"3D 掃描儀", sc:"3D 扫描仪", q:"training" },
-      { en:"Laser Cutter", tc:"激光切割機", sc:"激光切割机", q:"laser-assist" },
-      { en:"UV Printer", tc:"UV 打印機", sc:"UV 打印机", q:"training" },
-      { en:"Vacuum Forming", tc:"真空成型機", sc:"真空成型机", q:"training" },
-      { en:"Wire Cut Machine", tc:"線切割機", sc:"线切割机", q:"training" },
-      { en:"CNC Router", tc:"CNC 雕刻機", sc:"CNC 雕刻机", q:"training" },
-      { en:"Vinyl Cutter", tc:"乙烯基切割機", sc:"乙烯基切割机", q:"training" },
-      { en:"Photo Studio", tc:"攝影工作室", sc:"摄影工作室", q:"training" },
-    ]
+  "3dprint-troubleshoot": {
+    title:"3D Printer Troubleshooting",
+    body:"Common 3D printer issues and how to resolve them.",
+    steps: [
+      "Print not sticking to bed — Re-level bed, clean with alcohol, check bed temp",
+      "Filament not extruding — Check for clog, preheat nozzle, manually push filament",
+      "Stringing / blobs — Adjust retraction settings, lower nozzle temp slightly",
+      "Layer shift — Check belt tension, ensure frame is stable",
+      "Strange noise — Stop print, check for loose screws or debris in rails",
+    ], tag:"warning"
+  },
+  "laser-troubleshoot": {
+    title:"Laser Cutter Troubleshooting",
+    body:"Common laser cutter issues and how to resolve them.",
+    steps: [
+      "Not cutting through — Reduce speed, increase power, check focus",
+      "Burn marks — Increase speed, use masking tape, check air assist",
+      "Laser not firing — Check water chiller, ensure lid is closed, restart",
+      "Uneven engraving — Check bed level, clean lens, ensure material is flat",
+    ], tag:"warning"
+  },
+  "tool-organize": {
+    title:"Organize Tool Cabinet",
+    body:"Keep the tool cabinet tidy and ensure all tools are in their proper place.",
+    steps: [
+      "Sort tools by category: hand tools, power tools, measuring tools",
+      "Check each tool for damage — report broken tools to supervisor",
+      "Wipe tools clean before returning to cabinet",
+      "Ensure labels match the tool positions",
+    ], tag:"daily"
+  },
+  "tool-borrow": {
+    title:"Borrow / Return Tools",
+    body:"Procedure for lending tools to students and checking them back in.",
+    steps: [
+      "Ask student to show student ID and record their name",
+      "Note down tool name, condition, and expected return time",
+      "On return, inspect tool for damage or missing parts",
+      "Clean and return tool to its designated spot",
+    ], tag:"daily"
+  },
+  "tool-keys": {
+    title:"Key Management System",
+    body:"Manage lab keys and ensure they are properly tracked.",
+    steps: [
+      "Check the key cabinet at start and end of each shift",
+      "Verify all keys are present and accounted for",
+      "Log any key sign-outs with name, time, and purpose",
+      "Report missing keys to supervisor immediately",
+    ], tag:"daily"
+  },
+  "tool-components": {
+    title:"Component Cabinet",
+    body:"Check and refill the electronic component cabinet regularly.",
+    steps: [
+      "Inventory components: screws, nuts, capacitors, resistors, etc.",
+      "Sort and organize by type and size",
+      "Note low-stock items and report to supervisor for ordering",
+      "Keep the cabinet clean and labels visible",
+    ], tag:"daily"
   },
   "3dprint-overview": {
-    en: { title:"3D Printer Duties", body:"3 main duties for Student Assistants. Tap any card below for details." },
-    tc: { title:"3D 打印機職責", body:"學生助理的 3 項主要職責，點擊下方卡片查看詳情。" },
-    sc: { title:"3D 打印机职责", body:"学生助理的 3 项主要职责，点击下方卡片查看详情。" },
-    links: ["3dprint-assist", "3dprint-desiccant", "3dprint-clean"]
+    title:"3D Printer Duties", body:"3 main duties for Student Assistants. Tap any card below for details.",
+    links:["3dprint-assist","3dprint-desiccant","3dprint-clean"]
   },
   "laser-overview": {
-    en: { title:"Laser Cutter Duties", body:"2 main duties for Student Assistants. Tap any card below for details." },
-    tc: { title:"激光切割機職責", body:"學生助理的 2 項主要職責，點擊下方卡片查看詳情。" },
-    sc: { title:"激光切割机职责", body:"学生助理的 2 项主要职责，点击下方卡片查看详情。" },
-    links: ["laser-assist", "laser-clean"]
+    title:"Laser Cutter Duties", body:"2 main duties for Student Assistants. Tap any card below for details.",
+    links:["laser-assist","laser-clean"]
+  },
+  "training": {
+    title:"Self-Training Opportunities", body:"Explore these machines during your shift. Self-training materials available.",
+    equipment:[
+      { en:"3D Printer", q:"3dprint-assist" }, { en:"3D Scanner", q:"training" },
+      { en:"Laser Cutter", q:"laser-assist" }, { en:"UV Printer", q:"training" },
+      { en:"Vacuum Forming", q:"training" }, { en:"Wire Cut Machine", q:"training" },
+      { en:"CNC Router", q:"training" }, { en:"Vinyl Cutter", q:"training" },
+      { en:"Photo Studio", q:"training" },
+    ]
   },
 };
 
-const DEFAULT_PRESETS = {
-  'all': [
-    { en:"3D Printer", tc:"3D 打印機", sc:"3D 打印机", q:'3dprint-overview' },
-    { en:"Clean Printer Zone", tc:"清潔打印區", sc:"清洁打印区", q:'3dprint-clean' },
-    { en:"Replace Desiccant", tc:"更換除濕顆粒", sc:"更换除湿颗粒", q:'3dprint-desiccant' },
-    { en:"Laser Cutter", tc:"激光切割機", sc:"激光切割机", q:'laser-overview' },
-    { en:"Clean Laser", tc:"清潔激光機", sc:"清洁激光机", q:'laser-clean' },
-    { en:"Self-Training", tc:"自學培訓", sc:"自学培训", q:'training' },
-  ],
-  '3dprint': [
-    { en:"3D Printer Overview", tc:"3D 打印機總覽", sc:"3D 打印机总览", q:'3dprint-overview' },
-    { en:"Assist Students", tc:"協助同學使用", sc:"协助同学使用", q:'3dprint-assist' },
-    { en:"Replace Desiccant", tc:"更換除濕顆粒", sc:"更换除湿颗粒", q:'3dprint-desiccant' },
-    { en:"Clean Printer Zone", tc:"清潔打印區", sc:"清洁打印区", q:'3dprint-clean' },
-  ],
-  'laser': [
-    { en:"Laser Overview", tc:"激光機總覽", sc:"激光机总览", q:'laser-overview' },
-    { en:"Assist Students", tc:"協助同學使用", sc:"协助同学使用", q:'laser-assist' },
-    { en:"Clean Laser", tc:"清潔激光機", sc:"清洁激光机", q:'laser-clean' },
-  ],
-  'training': [
-    { en:"Training Overview", tc:"培訓總覽", sc:"培训总览", q:'training' },
-    { en:"Learn 3D Printer", tc:"學 3D Printer", sc:"学 3D Printer", q:'3dprint-assist' },
-    { en:"Learn Laser Cutter", tc:"學 Laser Cutter", sc:"学 Laser Cutter", q:'laser-assist' },
-    { en:"Learn 3D Scanner", tc:"學 3D Scanner", sc:"学 3D Scanner", q:'training' },
-  ],
-};
+const DEFAULT_MAIN_MENU = [
+  {
+    id:'3dprint',
+    title:'3D PRINTER', subtitle:'Print, clean, maintain',
+    subs:[
+      { en:'Use 3D Printer', q:'3dprint-assist' },
+      { en:'Replace Filament', pdf:'教程/IE_MarkerLab_Filament_Retreat_Manual.pdf' },
+      { en:'Clean Printer Zone', q:'3dprint-clean' },
+      { en:'Replace Desiccant', q:'3dprint-desiccant' },
+      { en:'Troubleshooting', q:'3dprint-troubleshoot' },
+    ]
+  },
+  {
+    id:'laser',
+    title:'LASER CUTTER', subtitle:'Engrave, cut, clean',
+    subs:[
+      { en:'Use Laser Cutter', pdf:'教程/IE_MakerLab_Laser_Cutter_S400_Manual.pdf' },
+      { en:'Clean Laser Machine', q:'laser-clean' },
+      { en:'Troubleshooting', q:'laser-troubleshoot' },
+    ]
+  },
+  {
+    id:'tools',
+    title:'TOOL CABINET', subtitle:'Tools, keys, parts',
+    subs:[
+      { en:'Organize Tool Cabinet', q:'tool-organize' },
+      { en:'Borrow / Return Tools', q:'tool-borrow' },
+      { en:'Check Key System', q:'tool-keys' },
+      { en:'Component Cabinet', q:'tool-components' },
+    ]
+  }
+];
 
 // ═══════════════════════════════════════
-//  LOAD DATA (localStorage override)
+//  LOAD FROM STORAGE
 // ═══════════════════════════════════════
-function loadTasks() {
-  try {
-    const custom = localStorage.getItem('maker_lab_staff_tasks');
-    if (custom) return JSON.parse(custom);
-  } catch(e) {}
-  return DEFAULT_TASKS;
-}
+function loadTasks() { try { const c=localStorage.getItem('maker_lab_staff_tasks'); if(c) return JSON.parse(c); } catch(e){} return DEFAULT_TASKS; }
+function loadGuide() { try { const c=localStorage.getItem('maker_lab_staff_guide'); if(c) return JSON.parse(c); } catch(e){} return DEFAULT_GUIDE; }
+function loadMenu() { try { const c=localStorage.getItem('maker_lab_staff_menu'); if(c) return JSON.parse(c); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU)); }
 
-function loadGuide() {
-  try {
-    const custom = localStorage.getItem('maker_lab_staff_guide');
-    if (custom) return JSON.parse(custom);
-  } catch(e) {}
-  return DEFAULT_GUIDE;
-}
-
-function loadPresets() {
-  try {
-    const custom = localStorage.getItem('maker_lab_staff_presets');
-    if (custom) return JSON.parse(custom);
-  } catch(e) {}
-  return DEFAULT_PRESETS;
-}
-
-let DAILY_TASKS = loadTasks();
+let TASKS = loadTasks();
 let GUIDE = loadGuide();
-let PRESETS = loadPresets();
+let MAIN_MENU = loadMenu();
 
 // ═══════════════════════════════════════
-//  STATE
+//  SIGNOFFS
 // ═══════════════════════════════════════
-let currentCategory = 'all';
-let currentLang = loadLang();
+let signoffs = {};
+function loadSignoffs() { try { const r=localStorage.getItem('maker_lab_signoffs'); if(r) signoffs=JSON.parse(r); } catch(e) { signoffs={}; } }
+function saveSignoffs() { localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs)); }
+function getSignoffs(id) { return signoffs[id] || []; }
+loadSignoffs();
+
+// ═══════════════════════════════════════
+//  DOM REFS
+// ═══════════════════════════════════════
 const chatEl = document.getElementById('chatContainer');
-const inputEl = document.getElementById('msgInput');
 const presetEl = document.getElementById('presetGrid');
 const welcomeEl = document.getElementById('welcomeCard');
 const leftScroll = document.getElementById('leftScroll');
 
-function t(key) { return I18N[currentLang]?.[key] ?? I18N['en'][key] ?? key; }
-function l(obj) { if (typeof obj === 'string') return obj; return obj[currentLang] ?? obj['en'] ?? ''; }
-
-function loadLang() {
-  try { const v = localStorage.getItem('maker_lab_lang'); if (v === 'en' || v === 'tc' || v === 'sc') return v; } catch(e) {}
-  return 'tc';
-}
-function saveLang() { try { localStorage.setItem('maker_lab_lang', currentLang); } catch(e) {} }
-
-function setLang(lang) {
-  currentLang = lang; saveLang(); updateLangUI();
-  renderLeftPanel(); renderPresets(currentCategory); applyI18nAttrs(); loadLeftChecks();
-}
-function updateLangUI() {
-  document.querySelectorAll('#langSwitcher .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
-}
-function applyI18nAttrs() {
-  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
-}
-
-// Listen for staff data changes (storage event)
-window.addEventListener('storage', function(e) {
-  if (e.key === 'maker_lab_staff_tasks') { DAILY_TASKS = loadTasks(); renderLeftPanel(); loadLeftChecks(); }
-  if (e.key === 'maker_lab_staff_guide') { GUIDE = loadGuide(); }
-  if (e.key === 'maker_lab_staff_presets') { PRESETS = loadPresets(); renderPresets(currentCategory); }
-});
-
-// ── Init ──
-function init() {
-  updateLangUI(); applyI18nAttrs(); renderLeftPanel(); renderPresets('all');
-  loadLeftChecks(); loadHistory();
-  document.querySelectorAll('#langSwitcher .lang-btn').forEach(btn => {
-    btn.addEventListener('click', () => setLang(btn.dataset.lang));
-  });
-  inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
-}
-
-// ── LEFT PANEL ──
+// ═══════════════════════════════════════
+//  LEFT PANEL
+// ═══════════════════════════════════════
 function renderLeftPanel() {
+  const sections = [
+    { tag:'print', label:'3D Printer', dot:'dot-print' },
+    { tag:'laser', label:'Laser Cutter', dot:'dot-laser' },
+    { tag:'general', label:'General', dot:'dot-general' },
+    { tag:'admin', label:'Admin', dot:'dot-print' },
+    { tag:'inv', label:'Inventory', dot:'dot-general' },
+  ];
   let html = '';
-  html += `<div class="task-section"><div class="task-section-label"><span class="dot dot-print"></span>${t('section3d')}</div>`;
-  DAILY_TASKS.filter(t => t.tag === 'print').forEach(t => html += renderClItem(t));
-  html += `</div>`;
-  html += `<div class="task-section"><div class="task-section-label"><span class="dot dot-laser"></span>${t('sectionLaser')}</div>`;
-  DAILY_TASKS.filter(t => t.tag === 'laser').forEach(t => html += renderClItem(t));
-  html += `</div>`;
-  html += `<div class="task-section"><div class="task-section-label"><span class="dot dot-general"></span>${t('sectionGeneral')}</div>`;
-  DAILY_TASKS.filter(t => !['print','laser'].includes(t.tag)).forEach(t => html += renderClItem(t));
-  html += `</div>`;
+  sections.forEach(sec => {
+    const tasks = TASKS.filter(t => t.tag === sec.tag);
+    if (!tasks.length) return;
+    html += `<div class="task-section"><div class="task-section-label"><span class="dot ${sec.dot}"></span>${sec.label}</div>`;
+    tasks.forEach(t => {
+      const names = getSignoffs(t.id);
+      const done = names.length > 0;
+      html += `<div class="cl-item${done?' done':''}" id="left-${t.id}" onclick="openSignoff('${t.id}')">
+        <div class="cl-check">${done?'&#10003;':''}</div>
+        <div class="cl-text">
+          <div class="cl-title">${escapeHtml(t.en)}</div>
+          ${names.length ? `<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
   leftScroll.innerHTML = html;
 }
 
-// ── SIGNOFF DATA ──
-let signoffs = loadSignoffs();
-
-function loadSignoffs() {
-  try {
-    const v = localStorage.getItem('maker_lab_signoffs');
-    if (v) return JSON.parse(v);
-  } catch(e) {}
-  return {};
-}
-function saveSignoffs() {
-  try { localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs)); } catch(e) {}
-}
-
-function getSignoffs(taskId) {
-  return signoffs[taskId] || [];
-}
-
-function renderClItem(t) {
-  const title = t[currentLang] || t.en || '';
-  const names = getSignoffs(t.id);
-  const isDone = names.length > 0;
-  const namesHtml = names.length > 0
-    ? `<div class="cl-signoffs">${names.map(n => `<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>`
-    : '';
-
-  return `
-    <div class="cl-item${isDone ? ' done' : ''}" id="left-${t.id}" onclick="openSignoff('${t.id}')">
-      <div class="cl-check">${isDone ? '&#10003;' : ''}</div>
-      <div class="cl-text">
-        <div class="cl-title">${escapeHtml(title)}</div>
-        ${namesHtml}
-        <span class="cl-tag ${t.tag}">${t.tag.toUpperCase()}</span>
-      </div>
-    </div>`;
-}
-
-// ── SIGNOFF MODAL ──
-let pendingSignoffTaskId = null;
-
+// ═══════════════════════════════════════
+//  SIGNOFF MODAL
+// ═══════════════════════════════════════
+let pendingSignoffId = null;
 function openSignoff(id) {
-  pendingSignoffTaskId = id;
-  const t = DAILY_TASKS.find(x => x.id === id);
-  const title = t ? (t[currentLang] || t.en || '') : '';
-  document.getElementById('signoffTaskPreview').textContent = title;
+  pendingSignoffId = id;
+  const t = TASKS.find(x => x.id === id);
+  document.getElementById('signoffTaskPreview').textContent = t ? t.en : id;
   document.getElementById('signoffNameInput').value = '';
   document.getElementById('nameModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('signoffNameInput').focus(), 100);
 }
-
-function closeSignoff() {
-  document.getElementById('nameModal').classList.add('hidden');
-  pendingSignoffTaskId = null;
-}
-
+function closeSignoff() { document.getElementById('nameModal').classList.add('hidden'); pendingSignoffId = null; }
 function confirmSignoff() {
   const name = document.getElementById('signoffNameInput').value.trim();
-  if (!name) { showToast('Please enter your name'); return; }
-  const id = pendingSignoffTaskId;
-  if (!id) return;
-
-  if (!signoffs[id]) signoffs[id] = [];
-  signoffs[id].push({ name: name, time: new Date().toISOString() });
-  saveSignoffs();
-
-  // Update the specific task item
-  const el = document.getElementById('left-' + id);
-  if (el) {
-    el.classList.add('done');
-    const checkEl = el.querySelector('.cl-check');
-    if (checkEl) checkEl.innerHTML = '&#10003;';
-    // Update signoff chips
-    const textEl = el.querySelector('.cl-text');
-    if (textEl) {
-      const existingChips = textEl.querySelector('.cl-signoffs');
-      if (existingChips) existingChips.remove();
-      const names = getSignoffs(id);
-      const chipsHtml = `<div class="cl-signoffs">${names.map(n => `<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>`;
-      const tagEl = textEl.querySelector('.cl-tag');
-      if (tagEl) {
-        tagEl.insertAdjacentHTML('beforebegin', chipsHtml);
-      } else {
-        textEl.insertAdjacentHTML('beforeend', chipsHtml);
-      }
-    }
-  }
-
-  closeSignoff();
+  if (!name || !pendingSignoffId) return;
+  if (!signoffs[pendingSignoffId]) signoffs[pendingSignoffId] = [];
+  signoffs[pendingSignoffId].push({ name, time: new Date().toISOString() });
+  saveSignoffs(); renderLeftPanel(); closeSignoff();
   showToast(name + ' checked in!');
 }
-
-// Close modal on Escape
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeSignoff();
-});
-
 function resetSignoffs() {
-  if (!confirm(t('resetConfirm'))) return;
-  signoffs = {};
-  saveSignoffs();
-  renderLeftPanel();
-  showToast(t('resetToast'));
+  if (!confirm('Clear all check-ins for today?')) return;
+  signoffs = {}; saveSignoffs(); renderLeftPanel();
+  showToast('All tasks cleared!');
 }
+document.getElementById('nameModal').addEventListener('click', closeSignoff);
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeSignoff(); });
 
-function loadLeftChecks() {
-  // Restore done state from signoffs
-  Object.entries(signoffs).forEach(([id, names]) => {
-    if (names && names.length > 0) {
-      const el = document.getElementById('left-' + id);
-      if (el) {
-        el.classList.add('done');
-        const checkEl = el.querySelector('.cl-check');
-        if (checkEl) checkEl.innerHTML = '&#10003;';
-      }
-    }
-  });
-}
-
-// ── RIGHT PANEL ──
-function switchCategory(cat) {
-  currentCategory = cat;
-  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-  const tab = document.querySelector(`.cat-tab[onclick*="${cat}"]`);
-  if (tab) tab.classList.add('active');
-  renderPresets(cat);
-}
-function renderPresets(cat) {
-  const btns = PRESETS[cat] || PRESETS['all'];
-  presetEl.innerHTML = btns.map(p => `
-    <button class="preset-btn" onclick="sendPreset('${p.q}')"><span>${l(p)}</span></button>
+// ═══════════════════════════════════════
+//  RIGHT PANEL — Main Menu
+// ═══════════════════════════════════════
+function renderMainMenu() {
+  presetEl.innerHTML = MAIN_MENU.map(m => `
+    <div class="menu-section">
+      <div class="ms-header">
+        <div>
+          <div class="ms-title">${m.title}</div>
+          <div class="ms-sub">${m.subtitle}</div>
+        </div>
+      </div>
+      <div class="ms-items">
+        ${m.subs.map(s => s.pdf ? `
+          <button class="ms-item" data-pdf="${s.pdf}" onclick="openPdf(this)">${s.en}</button>
+        ` : `
+          <button class="ms-item" data-q="${s.q}" onclick="sendSubItem(this)">${s.en}</button>
+        `).join('')}
+      </div>
+    </div>
   `).join('');
 }
 
-// ── SEARCH ──
-function findResponse(query) {
-  const q = query.toLowerCase().trim();
-  if (!q) return null;
-  if (GUIDE[q]) return buildGuideCard(GUIDE[q]);
-
-  if (q.includes('3d') || q.includes('print') || q.includes('打印') || q.includes('列印') || q.includes('pla') || q.includes('filament') || q.includes('耗材')) {
-    if (q.includes('desiccant') || q.includes('除濕') || q.includes('除湿') || q.includes('bead') || q.includes('顆粒') || q.includes('颗粒') || q.includes('乾燥') || q.includes('干燥'))
-      return buildGuideCard(GUIDE['3dprint-desiccant']);
-    if (q.includes('clean') || q.includes('清潔') || q.includes('清洁') || q.includes('清理') || q.includes('plate') || q.includes('平台') || q.includes('waste') || q.includes('廢') || q.includes('废'))
-      return buildGuideCard(GUIDE['3dprint-clean']);
-    if (q.includes('assist') || q.includes('協助') || q.includes('协助') || q.includes('help') || q.includes('同學') || q.includes('同学') || q.includes('學生') || q.includes('学生'))
-      return buildGuideCard(GUIDE['3dprint-assist']);
-    return buildGuideCard(GUIDE['3dprint-overview']);
+// ═══════════════════════════════════════
+//  SEND / PDF
+// ═══════════════════════════════════════
+function openPdf(btn) { const p = btn.dataset.pdf; if (p) window.open(p, '_blank'); }
+function sendSubItem(btn) {
+  const label = btn.textContent.trim();
+  doSend(label, btn.dataset.q);
+}
+async function doSend(label, query) {
+  if (!label || !query) return;
+  if (welcomeEl) welcomeEl.style.display = 'none';
+  addUserBubble(label); saveHistory(); chatEl.scrollTop = chatEl.scrollHeight;
+  showTyping();
+  await new Promise(r => setTimeout(r, 350 + Math.random() * 350));
+  hideTyping();
+  const html = buildResponse(query);
+  if (html) {
+    addBotBubble(html + `<div class="feedback-row">Was this helpful? <button class="feedback-btn" onclick="feedback(this,'yes')">Yes</button><button class="feedback-btn" onclick="feedback(this,'no')">No</button></div>`);
+  } else {
+    addBotBubble(`No matching guide found for "<b>${escapeHtml(label)}</b>". Try a different option.`);
   }
-
-  if (q.includes('laser') || q.includes('激光') || q.includes('鐳射') || q.includes('engrav') || q.includes('切割') || q.includes('雕刻')) {
-    if (q.includes('clean') || q.includes('清潔') || q.includes('清洁') || q.includes('清理') || q.includes('waste') || q.includes('廢') || q.includes('废') || q.includes('bed') || q.includes('平台'))
-      return buildGuideCard(GUIDE['laser-clean']);
-    if (q.includes('assist') || q.includes('協助') || q.includes('协助') || q.includes('help') || q.includes('同學') || q.includes('同学') || q.includes('學生') || q.includes('学生'))
-      return buildGuideCard(GUIDE['laser-assist']);
-    return buildGuideCard(GUIDE['laser-overview']);
-  }
-
-  if (q.includes('training') || q.includes('培訓') || q.includes('培训') || q.includes('自學') || q.includes('自学') || q.includes('learn') || q.includes('scanner') || q.includes('扫描') || q.includes('掃描') || q.includes('cnc') || q.includes('uv print') || q.includes('vacuum') || q.includes('vinyl') || q.includes('photo') || q.includes('wire cut'))
-    return buildTrainingCard();
-
-  if (q.includes('daily') || q.includes('日常') || q.includes('任務') || q.includes('任务') || q.includes('checklist') ||
-      q.includes('清潔') || q.includes('清洁') || q.includes('清理') || q.includes('整理') || q.includes('tool') || q.includes('工具') ||
-      q.includes('櫃') || q.includes('柜') || q.includes('workbench') || q.includes('工作台') || q.includes('battery') ||
-      q.includes('電池') || q.includes('电池') || q.includes('充電') || q.includes('充电') || q.includes('sink') || q.includes('洗手') ||
-      q.includes('key') || q.includes('鑰匙') || q.includes('钥匙') || q.includes('display') || q.includes('展示') ||
-      q.includes('component') || q.includes('零件') || q.includes('螺絲') || q.includes('螺丝'))
-    return buildDailyTasksSummary();
-
-  return null;
+  saveHistory(); chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-function buildGuideCard(entry) {
-  const title = l(entry);
-  let stepsHtml = '';
+function buildResponse(key) {
+  const entry = GUIDE[key];
+  if (!entry) return null;
+  let html = `<div class="guide-card"><div class="g-title">${entry.title}</div>`;
+  if (entry.body) html += `<div style="color:var(--text-secondary);font-size:14px;line-height:1.6;white-space:pre-line;">${entry.body}</div>`;
   if (entry.steps) {
-    stepsHtml = entry.steps.map((s, i) => `
-      <div class="g-row" style="margin-top:2px;"><span class="g-num">${i + 1}</span><div style="flex:1;"><div style="font-weight:600;">${l(s)}</div></div></div>
-    `).join('');
+    html += entry.steps.map((s, i) => `<div class="g-row"><span class="g-num">${i+1}</span><div style="flex:1;font-weight:500;">${s}</div></div>`).join('');
   }
-  let tagHtml = '';
-  if (entry.tag) {
-    const label = entry.tag === 'coming'
-      ? { en:'Detailed steps coming soon', tc:'待補充詳細步驟', sc:'待补充详细步骤' }
-      : { en:'Daily', tc:'日常', sc:'日常' };
-    tagHtml = `<span class="tag-chip ${entry.tag}">${l(label)}</span>`;
-  }
-  let linksHtml = '';
   if (entry.links) {
-    linksHtml = entry.links.map(lk => {
+    html += entry.links.map(lk => {
       const e = GUIDE[lk]; if (!e) return '';
-      return `<button class="preset-btn" onclick="sendPreset('${lk}')" style="margin-top:2px;"><span>${l(e).title || l(e)}</span></button>`;
+      return `<button class="ms-item" data-q="${lk}" onclick="sendSubItem(this)" style="margin-top:6px;">${e.title}</button>`;
     }).join('');
   }
-  return `
-    <div class="guide-card">
-      <div class="g-title">${title}</div>
-      ${entry.en?.body || entry.tc?.body ? `<div style="color:var(--text-secondary);font-size:14px;white-space:pre-line;line-height:1.65;">${l({en: entry.en?.body, tc: entry.tc?.body, sc: entry.sc?.body})}</div>` : ''}
-      ${stepsHtml}${linksHtml}${tagHtml}
-    </div>`;
+  if (entry.equipment) {
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">';
+    html += entry.equipment.map(eq => `<button class="ms-item" data-q="${eq.q}" onclick="sendSubItem(this)" style="font-size:13px;padding:10px;">${eq.en}</button>`).join('');
+    html += '</div>';
+  }
+  if (entry.tag) {
+    html += `<span class="tag-chip ${entry.tag}">${entry.tag==='coming'?'Coming Soon':entry.tag==='warning'?'Troubleshooting':'Daily'}</span>`;
+  }
+  html += `</div>`;
+  return html;
 }
 
-function buildDailyTasksSummary() {
-  let itemsHtml = DAILY_TASKS.map(t => `
-    <div class="g-row" style="margin-top:2px;"><span class="g-num">&bull;</span><div style="flex:1;"><div style="font-weight:600;">${escapeHtml(l(t))}</div></div></div>
-  `).join('');
-  return `<div class="guide-card"><div class="g-title">${t('leftTitle')}</div><div style="color:var(--text-secondary);font-size:14px;line-height:1.6;">${currentLang === 'en' ? 'These tasks are visible in the left panel.' : currentLang === 'tc' ? '這些任務顯示在左側面板。' : '这些任务显示在左侧面板。'}</div>${itemsHtml}</div>`;
-}
-
-function buildTrainingCard() {
-  const entry = GUIDE['training'];
-  let itemsHtml = entry.equipment.map(eq => `
-    <button class="training-item" onclick="sendPreset('${eq.q}')"><span class="t-name">${l(eq)}</span></button>
-  `).join('');
-  return `<div class="guide-card"><div class="g-title">${l(entry).title || l(entry)}</div><div style="color:var(--text-secondary);font-size:14px;line-height:1.6;">${l(entry).body || ''}</div><div class="training-grid">${itemsHtml}</div></div>`;
-}
-
-function buildFallbackHtml(query) {
-  const F = {
-    en: { title:'No matching guide found', try:'Try these', hint:'You can also ask the lab supervisor' },
-    tc: { title:'沒有找到相關指引', try:'試試這些', hint:'也可向實驗室主管查詢' },
-    sc: { title:'没有找到相关指引', try:'试试这些', hint:'也可向实验室主管查询' },
-  };
-  const f = F[currentLang] || F['en'];
-  return `${f.title} "<b>${escapeHtml(query)}</b>"<br><br>${f.try}：<br>&bull; <b>3D printer</b> &mdash; 3D 打印機職責<br>&bull; <b>laser cutter</b> &mdash; 激光機職責<br>&bull; <b>training</b> &mdash; 自學培訓設備<br>&bull; <b>cleaning</b> &mdash; 清潔任務<br><br><span style="color:var(--text-muted);font-size:13px;">${f.hint}</span>`;
-}
-
-// ── MESSAGES ──
+// ═══════════════════════════════════════
+//  CHAT
+// ═══════════════════════════════════════
 function addUserBubble(text) {
   const row = document.createElement('div'); row.className = 'bubble-row user';
   row.innerHTML = `<div class="bubble-avatar user">U</div><div class="bubble user">${escapeHtml(text)}</div>`;
@@ -1407,65 +582,60 @@ function showTyping() {
   row.innerHTML = `<div class="bubble-avatar bot">IE</div><div class="bubble bot"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
   chatEl.appendChild(row); chatEl.scrollTop = chatEl.scrollHeight;
 }
-function hideTyping() { const row = document.getElementById('typingRow'); if (row) row.remove(); }
-
-// ── SEND ──
-function sendPreset(text) { inputEl.value = text; sendMessage(); }
-async function sendMessage() {
-  const text = inputEl.value.trim(); if (!text) return;
-  inputEl.value = '';
-  if (welcomeEl) welcomeEl.style.display = 'none';
-  addUserBubble(text); saveHistory(); chatEl.scrollTop = chatEl.scrollHeight;
-  showTyping();
-  await new Promise(r => setTimeout(r, 350 + Math.random() * 350));
-  hideTyping();
-  const html = findResponse(text);
-  if (html) {
-    addBotBubble(html + `<div class="feedback-row">${t('feedbackAsk')} <button class="feedback-btn" onclick="feedback(this,'yes')">${t('feedbackYes')}</button><button class="feedback-btn" onclick="feedback(this,'no')">${t('feedbackNo')}</button></div>`);
-  } else {
-    addBotBubble(buildFallbackHtml(text));
-  }
-  saveHistory(); chatEl.scrollTop = chatEl.scrollHeight;
-}
-
+function hideTyping() { const r = document.getElementById('typingRow'); if (r) r.remove(); }
 function feedback(btn, type) {
   const row = btn.parentElement;
   row.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  showToast(type === 'yes' ? t('toastThanks') : t('toastImprove'));
+  showToast(type === 'yes' ? 'Thanks for your feedback!' : "We'll keep improving!");
 }
-
 function clearChat() {
-  if (confirm(t('clearConfirm'))) {
+  if (confirm('Clear all conversations?')) {
     chatEl.querySelectorAll('.bubble-row').forEach(r => r.remove());
     if (welcomeEl) welcomeEl.style.display = '';
-    localStorage.removeItem('maker_lab_v2_history');
+    localStorage.removeItem('maker_lab_history');
   }
 }
 
-// ── PERSISTENCE ──
-const STORAGE_KEY = 'maker_lab_v4_history';
-const STORAGE_TS_KEY = 'maker_lab_v4_ts';
+// ═══════════════════════════════════════
+//  PERSISTENCE
+// ═══════════════════════════════════════
+const HIST_KEY = 'maker_lab_history', HIST_TS = 'maker_lab_hist_ts';
 function saveHistory() {
-  try { localStorage.setItem(STORAGE_KEY, chatEl.innerHTML); localStorage.setItem(STORAGE_TS_KEY, Date.now()); } catch(e) {}
+  try { localStorage.setItem(HIST_KEY, chatEl.innerHTML); localStorage.setItem(HIST_TS, Date.now()); } catch(e) {}
 }
 function loadHistory() {
   try {
-    const ts = parseInt(localStorage.getItem(STORAGE_TS_KEY) || '0');
-    if (Date.now() - ts < 3600000) { const html = localStorage.getItem(STORAGE_KEY); if (html) { chatEl.innerHTML = html; return; } }
+    const ts = parseInt(localStorage.getItem(HIST_TS)||'0');
+    if (Date.now()-ts < 3600000) { const h = localStorage.getItem(HIST_KEY); if (h) { chatEl.innerHTML = h; return; } }
   } catch(e) {}
 }
 
-// ── UTILS ──
-function escapeHtml(str) { if (!str) return ''; const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+// ═══════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════
+function escapeHtml(str) { if(!str) return ''; const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
 function showToast(msg) {
-  const toast = document.getElementById('toast'); toast.textContent = msg; toast.style.display = 'block';
-  toast.style.animation = 'none'; toast.offsetHeight;
-  toast.style.animation = 'fadeIn .2s ease, fadeOut .3s ease 1.8s forwards';
-  setTimeout(() => { toast.style.display = 'none'; }, 2100);
+  const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block';
+  t.style.animation = 'none'; t.offsetHeight;
+  t.style.animation = 'fadeIn .2s ease, fadeOut .3s ease 1.8s forwards';
+  setTimeout(() => { t.style.display = 'none'; }, 2100);
 }
 
-init();
+// ═══════════════════════════════════════
+//  STORAGE EVENTS (cross-tab sync)
+// ═══════════════════════════════════════
+window.addEventListener('storage', function(e) {
+  if (e.key === 'maker_lab_staff_tasks') { TASKS = loadTasks(); renderLeftPanel(); }
+  if (e.key === 'maker_lab_staff_guide') { GUIDE = loadGuide(); }
+  if (e.key === 'maker_lab_staff_menu') { MAIN_MENU = loadMenu(); renderMainMenu(); }
+});
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+renderLeftPanel();
+renderMainMenu();
 </script>
 </body>
 </html>
