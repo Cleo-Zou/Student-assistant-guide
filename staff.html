@@ -55,8 +55,12 @@
     background: var(--surface); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; height: 100dvh;
   }
-  .left-header { padding: 20px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .left-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .left-header { padding: 20px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; text-align:center; }
+  .left-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #818cf8, #6366f1, #3b82f6, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
   .left-header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
   .left-header-actions { display: flex; gap: 8px; margin-top: 12px; }
   .btn-sm {
@@ -115,8 +119,16 @@
   .header .home-link:hover { color:var(--text); }
   .header-logo { width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:#fff;flex-shrink:0; }
   .header-info { flex:1;min-width:0; }
-  .header-title { font-size:19px;font-weight:700;letter-spacing:-0.02em; }
-  .header-subtitle { font-size:12px;color:var(--text-muted); }
+  .header-title { font-size:19px;font-weight:700;letter-spacing:-0.02em;
+    background: linear-gradient(135deg, #818cf8, #6366f1, #3b82f6, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-subtitle { font-size:12px;
+    background: linear-gradient(135deg, #a5b4fc, #818cf8, #60a5fa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; font-weight:600;
+  }
   .btn { padding:9px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:inherit;transition:all .15s;background:transparent;color:var(--text-secondary);white-space:nowrap; }
   .btn:hover { background:rgba(255,255,255,0.04);color:var(--text);border-color:var(--border-hover); }
   .btn.primary { background:var(--accent);color:#fff;border-color:var(--accent); }
@@ -168,6 +180,21 @@
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px) translateX(-50%);} to{opacity:1;transform:translateY(0) translateX(-50%);} }
   @keyframes fadeOut { to{opacity:0;transform:translateY(-6px) translateX(-50%);} }
 
+  /* ── PDF Upload ── */
+  .pdf-upload-box {
+    position:relative;border:2px dashed var(--border);border-radius:var(--radius-sm);
+    padding:14px 40px 14px 16px;cursor:pointer;transition:all .2s ease;
+    background:rgba(255,255,255,0.01);min-height:48px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .pdf-upload-box:hover{border-color:var(--accent);background:rgba(59,130,246,0.04);}
+  .tut-toggle-btn{
+    flex:1;padding:9px 14px;font-size:12px;font-family:inherit;font-weight:600;
+    cursor:pointer;background:transparent;border:none;color:var(--text-muted);transition:all .15s;
+  }
+  .tut-toggle-btn:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+  .tut-toggle-btn.active{background:var(--accent);color:#fff;}
+
   @media (max-width:860px) {
     body{flex-direction:column;}
     .left-panel{width:100%;min-width:0;max-height:40vh;border-right:none;border-bottom:1px solid var(--border);}
@@ -207,10 +234,6 @@
     </div>
     <button class="btn primary" id="saveAllBtn" onclick="saveAll()">Save All</button>
     <button class="btn" onclick="resetAll()">Reset</button>
-  </div>
-  <div class="editor-tabs" id="editorTabs">
-    <button class="editor-tab active" onclick="switchEditorTab('menu')">Main Menu</button>
-    <button class="editor-tab" onclick="switchEditorTab('guides')">Guides</button>
   </div>
   <div class="editor-body" id="editorBody">
     <div class="empty-state">Select a tab above to start editing.</div>
@@ -294,6 +317,48 @@ let signoffs = {};
 function loadSignoffs() { try{const r=localStorage.getItem('maker_lab_signoffs');if(r)signoffs=JSON.parse(r);}catch(e){signoffs={};} }
 loadSignoffs();
 
+// ═══════════════════════════════════════
+//  IndexedDB helpers for PDF uploads
+// ═══════════════════════════════════════
+const IDB_DB='maker_lab_uploads', IDB_STORE='pdfs';
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error('IndexedDB not available'));return;}
+    const req=indexedDB.open(IDB_DB,1);
+    req.onupgradeneeded=(e)=>{const db=e.target.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE,{keyPath:'id'});};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+function idbStore(id,name,blob,size){
+  return idbOpen().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,'readwrite'),store=tx.objectStore(IDB_STORE);
+    store.put({id,name,blob,size,mime:'application/pdf'});
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+  }));
+}
+function idbRetrieve(id){
+  return idbOpen().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,'readonly'),store=tx.objectStore(IDB_STORE),req=store.get(id);
+    req.onsuccess=()=>{db.close();resolve(req.result);};
+    req.onerror=()=>{db.close();reject(req.error);};
+  }));
+}
+function idbDelete(id){
+  return idbOpen().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,'readwrite'),store=tx.objectStore(IDB_STORE);
+    store.delete(id);tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+  }));
+}
+function generatePdfId(){return 'pdf_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);}
+function formatFileSize(bytes){
+  if(bytes<1024)return bytes+' B';
+  if(bytes<1048576)return (bytes/1024).toFixed(1)+' KB';
+  return (bytes/1048576).toFixed(1)+' MB';
+}
+
 const leftScroll = document.getElementById('leftScroll');
 const editorBody = document.getElementById('editorBody');
 const saveAllBtn = document.getElementById('saveAllBtn');
@@ -311,31 +376,21 @@ function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'
 // ═══════════════════════════════════════
 //  LEFT PANEL
 // ═══════════════════════════════════════
-const TAG_SECTIONS = [
-  {tag:'print',label:'3D Printer',dot:'dot-print'},{tag:'laser',label:'Laser Cutter',dot:'dot-laser'},
-  {tag:'general',label:'General',dot:'dot-general'},{tag:'admin',label:'Admin',dot:'dot-admin'},{tag:'inv',label:'Inventory',dot:'dot-inv'},
-];
 function getNames(id){return (signoffs[id]||[]).map(s=>s.name);}
 
 function renderLeftPanel(){
   let h='';
-  TAG_SECTIONS.forEach(sec=>{
-    const tasks=state.tasks.filter(t=>t.tag===sec.tag);
-    if(!tasks.length)return;
-    h+=`<div class="task-section"><div class="task-section-label"><span class="dot ${sec.dot}"></span>${sec.label}</div>`;
-    tasks.forEach(t=>{
-      const names=getNames(t.id),done=names.length>0,editing=state.editingTaskId===t.id;
-      h+=`<div class="cl-item${done?' done':''}${editing?' editing':''}" id="task-${t.id}" ${editing?'':`onclick="openTaskEditor('${t.id}')"`}>
-        <div class="cl-check">${done?'&#10003;':''}</div>
-        <div class="cl-text">
-          ${esc(t.en)}
-          ${names.length?`<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${esc(n)}</span>`).join('')}</div>`:''}
-        </div>
-        <button class="cl-edit-btn" onclick="event.stopPropagation();openTaskEditor('${t.id}')">&#9998;</button>
-      </div>`;
-      if(editing)h+=renderTaskEditor(t);
-    });
-    h+=`</div>`;
+  state.tasks.forEach(t=>{
+    const names=getNames(t.id),done=names.length>0,editing=state.editingTaskId===t.id;
+    h+=`<div class="cl-item${done?' done':''}${editing?' editing':''}" id="task-${t.id}" ${editing?'':`onclick="openTaskEditor('${t.id}')"`}>
+      <div class="cl-check">${done?'&#10003;':''}</div>
+      <div class="cl-text">
+        ${esc(t.en)}
+        ${names.length?`<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${esc(n)}</span>`).join('')}</div>`:''}
+      </div>
+      <button class="cl-edit-btn" onclick="event.stopPropagation();openTaskEditor('${t.id}')">&#9998;</button>
+    </div>`;
+    if(editing)h+=renderTaskEditor(t);
   });
   leftScroll.innerHTML=h||'<div style="padding:24px;color:var(--text-muted);text-align:center;font-size:15px;">No tasks. Click "+ Add Task".</div>';
   const total=Object.values(signoffs).flat().length;
@@ -343,17 +398,9 @@ function renderLeftPanel(){
 }
 function renderTaskEditor(t){
   return `<div class="task-editor-card" onclick="event.stopPropagation()">
-    <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">ID: ${esc(t.id)}</div>
-    <div class="field-label" style="margin-bottom:5px;">TASK TEXT</div>
+    <div class="field-label" style="margin-bottom:5px;">Title</div>
     <textarea id="te-en-${t.id}" oninput="markDirty()">${esc(t.en||'')}</textarea>
     <div class="editor-actions">
-      <select id="te-tag-${t.id}" onchange="markDirty()">
-        <option value="print" ${t.tag==='print'?'selected':''}>print</option>
-        <option value="laser" ${t.tag==='laser'?'selected':''}>laser</option>
-        <option value="general" ${t.tag==='general'?'selected':''}>general</option>
-        <option value="admin" ${t.tag==='admin'?'selected':''}>admin</option>
-        <option value="inv" ${t.tag==='inv'?'selected':''}>inv</option>
-      </select>
       <button class="btn-sm accent" onclick="saveTaskEdit('${t.id}')">Save</button>
       <button class="btn-sm" onclick="cancelTaskEdit()">Cancel</button>
       <button class="btn-sm danger" onclick="deleteTask('${t.id}')" style="margin-left:auto;">Delete</button>
@@ -365,12 +412,11 @@ function cancelTaskEdit(){state.editingTaskId=null;renderLeftPanel();}
 function saveTaskEdit(id){
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
   t.en=document.getElementById(`te-en-${id}`)?.value||'';
-  t.tag=document.getElementById(`te-tag-${id}`)?.value||'general';
   state.editingTaskId=null;markDirty();renderLeftPanel();showToast('Task updated. Save to persist.');
 }
 function addNewTask(){
   const ids=state.tasks.map(t=>parseInt(t.id.replace('d',''))||0);
-  state.tasks.push({id:'d'+(Math.max(0,...ids)+1),tag:'general',en:''});
+  state.tasks.push({id:'d'+(Math.max(0,...ids)+1),en:''});
   state.editingTaskId=state.tasks[state.tasks.length-1].id;markDirty();renderLeftPanel();
   setTimeout(()=>{const c=document.querySelector('.task-editor-card');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }
@@ -384,14 +430,13 @@ function deleteTask(id){
 //  RIGHT PANEL
 // ═══════════════════════════════════════
 function switchEditorTab(tab){
-  state.editorTab=tab;state.selectedGuide=null;state.selectedSubItem=null;
+  state.editorTab=tab;state.selectedSubItem=null;
   document.querySelectorAll('.editor-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelector(`.editor-tab[onclick*="${tab}"]`)?.classList.add('active');
+  document.querySelector('.editor-tab')?.classList.add('active');
   renderEditorBody();
 }
 function renderEditorBody(){
-  if(state.editorTab==='menu')renderMenuEditor();
-  else renderGuideEditor();
+  renderMenuEditor();
 }
 
 // ── MENU EDITOR ──
@@ -402,7 +447,7 @@ function renderMenuEditor(){
       <div class="me-title" onclick="editMenuCategory(${mi})">${m.title}</div>
       <div class="me-subtitle" onclick="editMenuCategory(${mi})">${m.subtitle}</div>`;
     m.subs.forEach((s,si)=>{
-      const type=s.pdf?'PDF':'GUIDE',active=state.selectedSubItem&&state.selectedSubItem.mi===mi&&state.selectedSubItem.si===si;
+      const type=s.pdf||s.pdfId?'PDF':'GUIDE',active=state.selectedSubItem&&state.selectedSubItem.mi===mi&&state.selectedSubItem.si===si;
       h+=`<div class="me-sub-item${active?' active':''}" onclick="editSubItem(${mi},${si})"><span style="flex:1;">${s.en}</span><span class="me-type">${type}</span></div>`;
     });
     h+=`<button class="btn-add-sm" onclick="addSubItem(${mi})">+ Add Item</button></div>`;
@@ -411,17 +456,40 @@ function renderMenuEditor(){
 
   if(state.selectedSubItem){
     const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si],keys=Object.keys(state.guide);
+    // Determine which mode: if menuSubMode is null, derive from data
+    if(menuSubMode===null) menuSubMode=(s.guide&&!s.pdfId)?'guide':'pdf';
+    const isGuide=menuSubMode==='guide';
     h+=`<div style="margin-top:24px;padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
       <div class="form-section-title">Edit: ${s.en} (${state.menu[mi].title})</div>
       <div class="form-section"><div class="field-label">Label</div><input class="field-input" id="si-en" value="${escAttr(s.en||'')}" oninput="markDirty()"></div>
-      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
-        <div><div class="field-label">Type</div><select class="field-select" id="si-type" onchange="markDirty();document.getElementById('si-q-group').style.display=this.value==='guide'?'':'none';document.getElementById('si-pdf-group').style.display=this.value==='pdf'?'':'none';"><option value="guide" ${s.q?'selected':''}>Guide</option><option value="pdf" ${s.pdf?'selected':''}>PDF</option></select></div>
-        <div style="flex:1;min-width:220px;" id="si-q-group" ${s.pdf?'style="display:none"':''}><div class="field-label">Guide Key</div><select class="field-select" id="si-q" onchange="markDirty()">${keys.map(k=>`<option value="${k}" ${s.q===k?'selected':''}>${k}</option>`).join('')}</select></div>
-        <div style="flex:1;min-width:220px;" id="si-pdf-group" ${!s.pdf?'style="display:none"':''}><div class="field-label">PDF Path</div><input class="field-input" id="si-pdf" value="${escAttr(s.pdf||'')}" oninput="markDirty()"></div>
+      <div class="field-label" style="margin-top:4px;">Content Type <span style="font-weight:400;color:var(--text-muted);">— choose one of the two formats below</span></div>
+      <div style="display:flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px;">
+        <button type="button" id="sub-pdf-btn" class="tut-toggle-btn${!isGuide?' active':''}" onclick="switchSubMode('pdf')">Upload PDF</button>
+        <button type="button" id="sub-guide-btn" class="tut-toggle-btn${isGuide?' active':''}" onclick="switchSubMode('guide')">Edit Guide</button>
       </div>
+
+      <div id="sub-pdf-section" style="${isGuide?'display:none;':''}">
+        <div class="pdf-upload-box" id="pdfUploadBox" onclick="document.getElementById('pdfFileInput').click()">
+          <span id="pdfUploadIcon">&#128206;</span>
+          <span id="pdfUploadText">${s.pdfId?esc(s.pdfName||''):(s.pdf?esc(s.pdf):'Choose File')}</span>
+          <span id="pdfUploadClose" style="${s.pdfId||s.pdf?'':'display:none;'}position:absolute;top:4px;right:10px;cursor:pointer;color:#ef4444;font-size:18px;font-weight:700;line-height:1;" onclick="event.stopPropagation();clearMenuPdf()">&times;</span>
+          <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handleMenuPdfSelect()">
+        </div>
+      </div>
+
+      <div id="sub-guide-section" style="${!isGuide?'display:none;':''}">
+        <input class="field-input" id="si-gtitle" value="${escAttr(s.guide&&s.guide.title||'')}" oninput="markDirty()" placeholder="Guide title">
+        <textarea class="field-textarea" id="si-gbody" oninput="markDirty()" style="margin-top:6px;" placeholder="Guide body">${esc(s.guide&&s.guide.body||'')}</textarea>
+        <div class="field-label" style="margin-top:8px;">Steps</div>
+        <div id="si-steps">
+          ${(s.guide&&s.guide.steps||[]).map((st,i)=>`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(st)}" id="si-st-${i}" oninput="markDirty()" placeholder="Step text"></div><button class="step-del" onclick="deleteMenuStep(${i})">&times;</button></div>`).join('')}
+        </div>
+        <button class="btn-add-sm" onclick="addMenuStep()">+ Add Step</button>
+      </div>
+
       <div style="margin-top:14px;display:flex;gap:10px;">
         <button class="btn-sm accent" onclick="saveSubItem()">Save</button>
-        <button class="btn-sm" onclick="state.selectedSubItem=null;renderEditorBody();">Close</button>
+        <button class="btn-sm" onclick="state.selectedSubItem=null;menuSubMode=null;pendingMenuPdf=null;renderEditorBody();">Close</button>
         <button class="btn-sm danger" onclick="deleteSubItem()" style="margin-left:auto;">Delete</button>
       </div>
     </div>`;
@@ -438,24 +506,120 @@ function renderMenuEditor(){
   }
   editorBody.innerHTML=h;
 }
-function editMenuCategory(mi){state.editingCategory=mi;state.selectedSubItem=null;renderEditorBody();}
+function editMenuCategory(mi){state.editingCategory=mi;state.selectedSubItem=null;menuSubMode=null;pendingMenuPdf=null;renderEditorBody();}
 function saveMenuCategory(){
   const mi=state.editingCategory;if(mi==null)return;
   state.menu[mi].title=document.getElementById('mc-title')?.value||'';
   state.menu[mi].subtitle=document.getElementById('mc-sub')?.value||'';
   state.editingCategory=null;markDirty();renderEditorBody();showToast('Category updated.');
 }
-function editSubItem(mi,si){state.selectedSubItem={mi,si};state.editingCategory=null;renderEditorBody();}
-function saveSubItem(){
+function editSubItem(mi,si){state.selectedSubItem={mi,si};state.editingCategory=null;pendingMenuPdf=null;menuSubMode=null;renderEditorBody();}
+async function deleteSubItem(){if(!confirm('Delete?'))return;const{mi,si}=state.selectedSubItem;const s=state.menu[mi].subs[si];if(s&&s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}state.menu[mi].subs.splice(si,1);state.selectedSubItem=null;pendingMenuPdf=null;menuSubMode=null;markDirty();renderEditorBody();}
+function addSubItem(mi){state.menu[mi].subs.push({en:'New Item'});menuSubMode='pdf';markDirty();renderEditorBody();}
+
+
+// ── Menu PDF / Guide mode ──
+let pendingMenuPdf=null;
+let menuSubMode=null; // 'pdf' | 'guide' | null (null = derive from data)
+
+function switchSubMode(mode){
+  menuSubMode=mode;
+  // Clear the inactive side's data from the sub-item
+  if(state.selectedSubItem){
+    var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
+    if(mode==='pdf'){ delete s.guide; pendingMenuPdf=null; }
+    else{ if(s.pdfId){s._oldPdfId=s.pdfId;} delete s.pdfId;delete s.pdfName;delete s.pdf; pendingMenuPdf=null; }
+  }
+  markDirty();renderEditorBody();
+}
+
+// ── Menu PDF Upload ──
+function handleMenuPdfSelect(){
+  const input=document.getElementById('pdfFileInput');const file=input.files[0];
+  if(!file)return;
+  if(file.type!=='application/pdf'){showToast('Please select a PDF file.');input.value='';return;}
+  if(file.size>50*1024*1024){showToast('File too large. Maximum size is 50MB.');input.value='';return;}
+  pendingMenuPdf={id:generatePdfId(),name:file.name,blob:file,size:file.size};
+  var text=document.getElementById('pdfUploadText');var close=document.getElementById('pdfUploadClose');
+  if(text)text.textContent=file.name;if(close)close.style.display='';markDirty();
+}
+function clearMenuPdf(){
+  if(state.selectedSubItem){var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];if(s.pdfId){s._oldPdfId=s.pdfId;}delete s.pdfId;delete s.pdfName;delete s.pdf;}
+  pendingMenuPdf=null;renderEditorBody();markDirty();
+}
+
+// ── Menu Guide Steps ──
+function syncMenuFormToState(){
+  if(!state.selectedSubItem)return;
+  var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
+  var gtitle=document.getElementById('si-gtitle')?.value||'';
+  var gbody=document.getElementById('si-gbody')?.value||'';
+  if(!s.guide)s.guide={};
+  s.guide.title=gtitle; s.guide.body=gbody;
+  var stepEls=document.querySelectorAll('#si-steps input');
+  if(stepEls.length>0){s.guide.steps=Array.from(stepEls).map(function(el){return el.value||'';});}
+  else{s.guide.steps=[];}
+}
+function addMenuStep(){
+  syncMenuFormToState();
+  var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
+  if(!s.guide)s.guide={};
+  if(!s.guide.steps)s.guide.steps=[];
+  s.guide.steps.push('');markDirty();renderEditorBody();
+}
+function deleteMenuStep(i){
+  syncMenuFormToState();
+  var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
+  if(s.guide&&s.guide.steps)s.guide.steps.splice(i,1);
+  markDirty();renderEditorBody();
+}
+
+async function saveSubItem(){
   const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si];
   s.en=document.getElementById('si-en')?.value||'';
-  const type=document.getElementById('si-type')?.value;
-  if(type==='pdf'){delete s.q;s.pdf=document.getElementById('si-pdf')?.value||'';}
-  else{delete s.pdf;s.q=document.getElementById('si-q')?.value||'';}
+  delete s.q;
+
+  if(menuSubMode==='guide'){
+    // Guide mode — clear PDF, save guide from DOM
+    if(s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
+    delete s.pdfId;delete s.pdfName;delete s.pdf;
+    if(s._oldPdfId){try{await idbDelete(s._oldPdfId);}catch(e){} delete s._oldPdfId;}
+    pendingMenuPdf=null;
+
+    syncMenuFormToState();
+    if(!s.guide||(!s.guide.title&&!s.guide.body&&(!s.guide.steps||!s.guide.steps.length))){
+      delete s.guide;
+    }
+  }else{
+    // PDF mode (default) — clear guide, save PDF
+    delete s.guide;
+    if(s._oldPdfId){try{await idbDelete(s._oldPdfId);}catch(e){} delete s._oldPdfId;}
+    if(pendingMenuPdf){
+      if(s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
+      try{
+        await idbStore(pendingMenuPdf.id,pendingMenuPdf.name,pendingMenuPdf.blob,pendingMenuPdf.size);
+        delete s.pdf;s.pdfId=pendingMenuPdf.id;s.pdfName=pendingMenuPdf.name;
+        pendingMenuPdf=null;
+      }catch(e){showToast('Failed to store PDF: '+e.message);return;}
+    }else if(!s.pdfId&&!s.pdf){
+      showToast('Please select a PDF file first.');return;
+    }
+  }
+
+  menuSubMode=null;
   markDirty();showToast('Sub-item saved.');renderEditorBody();
 }
-function deleteSubItem(){if(!confirm('Delete?'))return;const{mi,si}=state.selectedSubItem;state.menu[mi].subs.splice(si,1);state.selectedSubItem=null;markDirty();renderEditorBody();}
-function addSubItem(mi){state.menu[mi].subs.push({en:'New Item',q:Object.keys(state.guide)[0]||'training'});markDirty();renderEditorBody();}
+
+async function deleteSubItem(){
+  if(!confirm('Delete?'))return;
+  const {mi,si}=state.selectedSubItem;
+  const s=state.menu[mi].subs[si];
+  if(s&&s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
+  state.menu[mi].subs.splice(si,1);
+  state.selectedSubItem=null;pendingMenuPdf=null;
+  markDirty();renderEditorBody();
+}
+function addSubItem(mi){state.menu[mi].subs.push({en:'New Item'});markDirty();renderEditorBody();}
 
 // ── GUIDES EDITOR ──
 function renderGuideEditor(){
@@ -528,12 +692,13 @@ function saveAll(){
   saveToStorage('maker_lab_staff_menu',state.menu);
   state.dirty=false;saveAllBtn.classList.remove('dirty');showToast('All changes saved!');
 }
-function resetAll(){
+async function resetAll(){
   if(!confirm('Reset ALL data to defaults?'))return;
+  try{const db=await idbOpen();const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).clear();db.close();}catch(e){}
   state.tasks=JSON.parse(JSON.stringify(DEFAULT_TASKS));
   state.guide=JSON.parse(JSON.stringify(DEFAULT_GUIDE));
   state.menu=JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU));
-  state.editingTaskId=null;state.selectedGuide=null;state.selectedSubItem=null;
+  state.editingTaskId=null;state.selectedSubItem=null;pendingMenuPdf=null;menuSubMode=null;
   markDirty();renderLeftPanel();renderEditorBody();showToast('Reset. Click Save All to persist.');
 }
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveAll();}});
