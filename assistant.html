@@ -190,6 +190,38 @@
     .chat-container { padding:14px; }
     .bubble { max-width:90%; }
   }
+/* ── MagicBento border glow ── */
+.glow-card {
+  position: relative; overflow: hidden;
+  --glow-x: 50%; --glow-y: 50%; --glow-intensity: 0; --glow-rgb: 132,0,255;
+}
+.glow-card::after {
+  content: ''; position: absolute; inset: 0; padding: 2px; border-radius: inherit;
+  background: radial-gradient(300px circle at var(--glow-x) var(--glow-y),
+    rgba(var(--glow-rgb), calc(var(--glow-intensity) * 0.8)) 0%,
+    rgba(var(--glow-rgb), calc(var(--glow-intensity) * 0.4)) 30%,
+    transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude; pointer-events: none; z-index: 1; opacity: 1; transition: opacity 0.3s;
+}
+.glow-card:hover { box-shadow: 0 4px 20px rgba(46,24,78,0.4), 0 0 30px rgba(var(--glow-rgb),0.2); }
+
+/* Spotlight */
+.bento-spotlight {
+  position: fixed; width: 600px; height: 600px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(132,0,255,0.12) 0%, rgba(132,0,255,0.05) 20%, rgba(132,0,255,0.02) 40%, transparent 60%);
+  z-index: 200; opacity: 0; transform: translate(-50%,-50%); mix-blend-mode: screen; transition: opacity 0.4s;
+}
+
+/* Ripple */
+.glow-ripple {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 100;
+  background: radial-gradient(circle, rgba(var(--glow-rgb),0.4) 0%, rgba(var(--glow-rgb),0.2) 30%, transparent 70%);
+  animation: glow-ripple-out 0.7s ease-out forwards;
+}
+@keyframes glow-ripple-out { from { transform: scale(0); opacity: 1; } to { transform: scale(1); opacity: 0; } }
+
 </style>
 </head>
 <body>
@@ -218,11 +250,11 @@
     <button class="icon-btn" onclick="clearChat()">Clear</button>
   </div>
   <div class="chat-container" id="chatContainer">
-    <div class="welcome-card" id="welcomeCard">
+    <div class="welcome-card glow-card" id="welcomeCard">
       <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
       <p>Hello <span class="nebula">Student Assistants</span>! Select tasks below.</p>
     </div>
-    <div class="main-menu" id="presetGrid"></div>
+    <div class="main-menu bento-section" id="presetGrid"></div>
   </div>
 </div>
 
@@ -530,7 +562,7 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') closeSignoff()
 // ═══════════════════════════════════════
 function renderMainMenu() {
   presetEl.innerHTML = MAIN_MENU.map(m => `
-    <div class="menu-section">
+    <div class="menu-section glow-card">
       <div class="ms-header">
         <div>
           <div class="ms-title">${m.title}</div>
@@ -565,7 +597,7 @@ function showGuideInline(btn){
 
 function buildGuideHTML(entry){
   if(!entry)return null;
-  let html=`<div class="guide-card"><div class="g-title">${entry.title||''}</div>`;
+  let html=`<div class="guide-card glow-card"><div class="g-title">${entry.title||''}</div>`;
   if(entry.body)html+=`<div style="color:var(--text-secondary);font-size:14px;line-height:1.6;white-space:pre-line;">${entry.body}</div>`;
   if(entry.steps&&entry.steps.length){
     html+=entry.steps.map((s,i)=>`<div class="g-row"><span class="g-num">${i+1}</span><div style="flex:1;font-weight:500;">${escapeHtml(s)}</div></div>`).join('');
@@ -623,7 +655,7 @@ async function doSend(label, query) {
 function buildResponse(key) {
   const entry = GUIDE[key];
   if (!entry) return null;
-  let html = `<div class="guide-card"><div class="g-title">${entry.title}</div>`;
+  let html = `<div class="guide-card glow-card"><div class="g-title">${entry.title}</div>`;
   if (entry.body) html += `<div style="color:var(--text-secondary);font-size:14px;line-height:1.6;white-space:pre-line;">${entry.body}</div>`;
   if (entry.steps) {
     html += entry.steps.map((s, i) => `<div class="g-row"><span class="g-num">${i+1}</span><div style="flex:1;font-weight:500;">${s}</div></div>`).join('');
@@ -718,6 +750,68 @@ window.addEventListener('storage', function(e) {
 // ═══════════════════════════════════════
 renderLeftPanel();
 renderMainMenu();
+// ── MagicBento: border glow + spotlight + ripple ──
+(function(){
+  const GLOW_RGB = '132,0,255';
+  const SPOTLIGHT_RADIUS = 300;
+
+  // --- Spotlight ---
+  const spotlight = document.createElement('div');
+  spotlight.className = 'bento-spotlight';
+  document.body.appendChild(spotlight);
+
+  // --- Glow tracking ---
+  function updateGlow(card, mx, my) {
+    const r = card.getBoundingClientRect();
+    const rx = ((mx - r.left) / r.width) * 100;
+    const ry = ((my - r.top) / r.height) * 100;
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    const dist = Math.hypot(mx - cx, my - cy);
+    const proximity = SPOTLIGHT_RADIUS * 0.5;
+    const fadeDist = SPOTLIGHT_RADIUS * 0.75;
+    let intensity = 0;
+    if (dist <= proximity) intensity = 1;
+    else if (dist <= fadeDist) intensity = (fadeDist - dist) / (fadeDist - proximity);
+    card.style.setProperty('--glow-x', rx + '%');
+    card.style.setProperty('--glow-y', ry + '%');
+    card.style.setProperty('--glow-intensity', intensity);
+    card.style.setProperty('--glow-rgb', GLOW_RGB);
+    return intensity;
+  }
+
+  document.addEventListener('mousemove', function(e) {
+    spotlight.style.left = e.clientX + 'px';
+    spotlight.style.top = e.clientY + 'px';
+    spotlight.style.opacity = '0.7';
+    document.querySelectorAll('.glow-card').forEach(c => {
+      updateGlow(c, e.clientX, e.clientY);
+    });
+  });
+
+  document.addEventListener('mouseleave', function() {
+    spotlight.style.opacity = '0';
+    document.querySelectorAll('.glow-card').forEach(c => { c.style.setProperty('--glow-intensity', '0'); });
+  });
+
+  // --- Ripple on click ---
+  document.addEventListener('click', function(e) {
+    const card = e.target.closest('.glow-card');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const maxDist = Math.max(
+      Math.hypot(x, y), Math.hypot(x - r.width, y),
+      Math.hypot(x, y - r.height), Math.hypot(x - r.width, y - r.height)
+    );
+    const ripple = document.createElement('div');
+    ripple.className = 'glow-ripple';
+    ripple.style.cssText = `width:${maxDist*2}px;height:${maxDist*2}px;left:${x-maxDist}px;top:${y-maxDist}px;`;
+    ripple.style.setProperty('--glow-rgb', GLOW_RGB);
+    card.appendChild(ripple);
+    ripple.addEventListener('animationend', function(){ ripple.remove(); });
+  });
+})();
+
 </script>
 </body>
 </html>
