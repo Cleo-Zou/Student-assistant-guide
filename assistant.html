@@ -37,8 +37,12 @@
     background: var(--surface); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; height: 100dvh;
   }
-  .left-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .left-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .left-header { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; text-align:center; }
+  .left-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #818cf8, #6366f1, #3b82f6, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
   .left-header .subtitle { font-size: 11px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
   .reset-btn {
     margin-top: 10px; padding: 5px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
@@ -89,7 +93,7 @@
   .cl-item.done .cl-check { background:var(--success); border-color:var(--success); color:#fff; }
   .cl-item.done .cl-title { color:var(--text-muted); text-decoration:line-through; }
   .cl-signoffs { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
-  .cl-signoff-chip { font-size:10px; padding:2px 8px; border-radius:10px; background:rgba(255,255,255,0.06); color:var(--text-muted); }
+  .cl-signoff-chip { font-size:10px; padding:2px 8px; border-radius:10px; background:rgba(34,197,94,0.12); color:var(--success); font-weight:600; }
   .left-footer { padding:10px 18px; border-top:1px solid var(--border); flex-shrink:0; font-size:11px; color:var(--text-muted); text-align:center; }
 
   /* Name signoff modal */
@@ -123,7 +127,17 @@
 
   .welcome-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px 24px; text-align:center; }
   .welcome-card h2 { font-size:22px; font-weight:700; margin-bottom:10px; }
+  .welcome-card h2 .nebula {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #3b82f6, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
   .welcome-card p { color:var(--text-secondary); font-size:17px; }
+  .welcome-card p .nebula {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; font-weight:600;
+  }
 
   .main-menu { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:16px; }
   .menu-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 20px 24px; display:flex; flex-direction:column; gap:14px; }
@@ -199,14 +213,14 @@
     <div class="header-logo">IE</div>
     <div class="header-info">
       <div class="header-title">IE Maker Lab</div>
-      <div class="header-subtitle">Student Assistant Guide</div>
+      <div class="header-subtitle">Student Assistants' Guide</div>
     </div>
     <button class="icon-btn" onclick="clearChat()">Clear</button>
   </div>
   <div class="chat-container" id="chatContainer">
     <div class="welcome-card" id="welcomeCard">
-      <h2>Welcome to IE Maker Lab</h2>
-      <p>Hello Student Assistant! Select a task below.</p>
+      <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
+      <p>Hello <span class="nebula">Student Assistants</span>! Select tasks below.</p>
     </div>
     <div class="main-menu" id="presetGrid"></div>
   </div>
@@ -435,6 +449,27 @@ function getSignoffs(id) { return signoffs[id] || []; }
 loadSignoffs();
 
 // ═══════════════════════════════════════
+//  IndexedDB helpers for PDF uploads
+// ═══════════════════════════════════════
+const IDB_DB = 'maker_lab_uploads', IDB_STORE = 'pdfs';
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error('IndexedDB not available')); return; }
+    const req = indexedDB.open(IDB_DB, 1);
+    req.onupgradeneeded = (e) => { const db = e.target.result; if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath: 'id' }); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function idbRetrieve(id) {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly'), store = tx.objectStore(IDB_STORE), req = store.get(id);
+    req.onsuccess = () => { db.close(); resolve(req.result); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  }));
+}
+
+// ═══════════════════════════════════════
 //  DOM REFS
 // ═══════════════════════════════════════
 const chatEl = document.getElementById('chatContainer');
@@ -516,20 +551,68 @@ function renderMainMenu() {
         </div>
       </div>
       <div class="ms-items">
-        ${m.subs.map(s => s.pdf ? `
-          <button class="ms-item" data-pdf="${s.pdf}" onclick="openPdf(this)">${s.en}</button>
-        ` : `
-          <button class="ms-item" data-q="${s.q}" onclick="sendSubItem(this)">${s.en}</button>
-        `).join('')}
+        ${m.subs.map(s => {
+          if (s.pdfId) {
+            return `<button class="ms-item" data-pdf-id="${s.pdfId}" data-pdf-name="${escapeHtml(s.pdfName||'')}" onclick="openPdf(this)">${s.en}</button>`;
+          } else if (s.pdf) {
+            return `<button class="ms-item" data-pdf="${s.pdf}" onclick="openPdf(this)">${s.en}</button>`;
+          } else if (s.guide) {
+            return `<button class="ms-item" data-guide="${encodeURIComponent(JSON.stringify(s.guide))}" onclick="showGuideInline(this)">${s.en}</button>`;
+          } else {
+            return `<button class="ms-item" data-q="${s.q||''}" onclick="sendSubItem(this)">${s.en}</button>`;
+          }
+        }).join('')}
       </div>
     </div>
   `).join('');
 }
 
+function showGuideInline(btn){
+  const guide=JSON.parse(decodeURIComponent(btn.dataset.guide));
+  const html=buildGuideHTML(guide);
+  if(welcomeEl)welcomeEl.style.display='none';
+  addUserBubble(btn.textContent.trim());saveHistory();chatEl.scrollTop=chatEl.scrollHeight;
+  if(html){addBotBubble(html+`<div class="feedback-row">Was this helpful? <button class="feedback-btn" onclick="feedback(this,'yes')">Yes</button><button class="feedback-btn" onclick="feedback(this,'no')">No</button></div>`);}
+  saveHistory();chatEl.scrollTop=chatEl.scrollHeight;
+}
+
+function buildGuideHTML(entry){
+  if(!entry)return null;
+  let html=`<div class="guide-card"><div class="g-title">${entry.title||''}</div>`;
+  if(entry.body)html+=`<div style="color:var(--text-secondary);font-size:14px;line-height:1.6;white-space:pre-line;">${entry.body}</div>`;
+  if(entry.steps&&entry.steps.length){
+    html+=entry.steps.map((s,i)=>`<div class="g-row"><span class="g-num">${i+1}</span><div style="flex:1;font-weight:500;">${escapeHtml(s)}</div></div>`).join('');
+  }
+  if(entry.tag){
+    html+=`<span class="tag-chip ${entry.tag}">${entry.tag==='coming'?'Coming Soon':entry.tag==='warning'?'Troubleshooting':'Daily'}</span>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
 // ═══════════════════════════════════════
 //  SEND / PDF
 // ═══════════════════════════════════════
-function openPdf(btn) { const p = btn.dataset.pdf; if (p) window.open(p, '_blank'); }
+async function openPdf(btn) {
+  const pdfPath = btn.dataset.pdf;
+  const pdfId = btn.dataset.pdfId;
+
+  if (pdfId) {
+    try {
+      const record = await idbRetrieve(pdfId);
+      if (record && record.blob) {
+        const url = URL.createObjectURL(record.blob);
+        const w = window.open(url, '_blank');
+        if (w) { setTimeout(() => URL.revokeObjectURL(url), 60000); }
+        else { URL.revokeObjectURL(url); showToast('Popup blocked. Please allow popups for this site.'); }
+      } else {
+        showToast('PDF not found in storage. It may have been deleted.');
+      }
+    } catch (e) { showToast('Failed to load PDF: ' + e.message); }
+  } else if (pdfPath) {
+    window.open(pdfPath, '_blank');
+  }
+}
 function sendSubItem(btn) {
   const label = btn.textContent.trim();
   doSend(label, btn.dataset.q);
