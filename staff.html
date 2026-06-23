@@ -376,31 +376,21 @@ function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'
 // ═══════════════════════════════════════
 //  LEFT PANEL
 // ═══════════════════════════════════════
-const TAG_SECTIONS = [
-  {tag:'print',label:'3D Printer',dot:'dot-print'},{tag:'laser',label:'Laser Cutter',dot:'dot-laser'},
-  {tag:'general',label:'General',dot:'dot-general'},{tag:'admin',label:'Admin',dot:'dot-admin'},{tag:'inv',label:'Inventory',dot:'dot-inv'},
-];
 function getNames(id){return (signoffs[id]||[]).map(s=>s.name);}
 
 function renderLeftPanel(){
   let h='';
-  TAG_SECTIONS.forEach(sec=>{
-    const tasks=state.tasks.filter(t=>t.tag===sec.tag);
-    if(!tasks.length)return;
-    h+=`<div class="task-section"><div class="task-section-label"><span class="dot ${sec.dot}"></span>${sec.label}</div>`;
-    tasks.forEach(t=>{
-      const names=getNames(t.id),done=names.length>0,editing=state.editingTaskId===t.id;
-      h+=`<div class="cl-item${done?' done':''}${editing?' editing':''}" id="task-${t.id}" ${editing?'':`onclick="openTaskEditor('${t.id}')"`}>
-        <div class="cl-check">${done?'&#10003;':''}</div>
-        <div class="cl-text">
-          ${esc(t.en)}
-          ${names.length?`<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${esc(n)}</span>`).join('')}</div>`:''}
-        </div>
-        <button class="cl-edit-btn" onclick="event.stopPropagation();openTaskEditor('${t.id}')">&#9998;</button>
-      </div>`;
-      if(editing)h+=renderTaskEditor(t);
-    });
-    h+=`</div>`;
+  state.tasks.forEach(t=>{
+    const names=getNames(t.id),done=names.length>0,editing=state.editingTaskId===t.id;
+    h+=`<div class="cl-item${done?' done':''}${editing?' editing':''}" id="task-${t.id}" ${editing?'':`onclick="openTaskEditor('${t.id}')"`}>
+      <div class="cl-check">${done?'&#10003;':''}</div>
+      <div class="cl-text">
+        ${esc(t.en)}
+        ${names.length?`<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${esc(n)}</span>`).join('')}</div>`:''}
+      </div>
+      <button class="cl-edit-btn" onclick="event.stopPropagation();openTaskEditor('${t.id}')">&#9998;</button>
+    </div>`;
+    if(editing)h+=renderTaskEditor(t);
   });
   leftScroll.innerHTML=h||'<div style="padding:24px;color:var(--text-muted);text-align:center;font-size:15px;">No tasks. Click "+ Add Task".</div>';
   const total=Object.values(signoffs).flat().length;
@@ -408,17 +398,9 @@ function renderLeftPanel(){
 }
 function renderTaskEditor(t){
   return `<div class="task-editor-card" onclick="event.stopPropagation()">
-    <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">ID: ${esc(t.id)}</div>
     <div class="field-label" style="margin-bottom:5px;">Title</div>
     <textarea id="te-en-${t.id}" oninput="markDirty()">${esc(t.en||'')}</textarea>
     <div class="editor-actions">
-      <select id="te-tag-${t.id}" onchange="markDirty()">
-        <option value="print" ${t.tag==='print'?'selected':''}>print</option>
-        <option value="laser" ${t.tag==='laser'?'selected':''}>laser</option>
-        <option value="general" ${t.tag==='general'?'selected':''}>general</option>
-        <option value="admin" ${t.tag==='admin'?'selected':''}>admin</option>
-        <option value="inv" ${t.tag==='inv'?'selected':''}>inv</option>
-      </select>
       <button class="btn-sm accent" onclick="saveTaskEdit('${t.id}')">Save</button>
       <button class="btn-sm" onclick="cancelTaskEdit()">Cancel</button>
       <button class="btn-sm danger" onclick="deleteTask('${t.id}')" style="margin-left:auto;">Delete</button>
@@ -430,12 +412,11 @@ function cancelTaskEdit(){state.editingTaskId=null;renderLeftPanel();}
 function saveTaskEdit(id){
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
   t.en=document.getElementById(`te-en-${id}`)?.value||'';
-  t.tag=document.getElementById(`te-tag-${id}`)?.value||'general';
   state.editingTaskId=null;markDirty();renderLeftPanel();showToast('Task updated. Save to persist.');
 }
 function addNewTask(){
   const ids=state.tasks.map(t=>parseInt(t.id.replace('d',''))||0);
-  state.tasks.push({id:'d'+(Math.max(0,...ids)+1),tag:'general',en:''});
+  state.tasks.push({id:'d'+(Math.max(0,...ids)+1),en:''});
   state.editingTaskId=state.tasks[state.tasks.length-1].id;markDirty();renderLeftPanel();
   setTimeout(()=>{const c=document.querySelector('.task-editor-card');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }

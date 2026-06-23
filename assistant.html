@@ -481,30 +481,17 @@ const leftScroll = document.getElementById('leftScroll');
 //  LEFT PANEL
 // ═══════════════════════════════════════
 function renderLeftPanel() {
-  const sections = [
-    { tag:'print', label:'3D Printer', dot:'dot-print' },
-    { tag:'laser', label:'Laser Cutter', dot:'dot-laser' },
-    { tag:'general', label:'General', dot:'dot-general' },
-    { tag:'admin', label:'Admin', dot:'dot-print' },
-    { tag:'inv', label:'Inventory', dot:'dot-general' },
-  ];
   let html = '';
-  sections.forEach(sec => {
-    const tasks = TASKS.filter(t => t.tag === sec.tag);
-    if (!tasks.length) return;
-    html += `<div class="task-section"><div class="task-section-label"><span class="dot ${sec.dot}"></span>${sec.label}</div>`;
-    tasks.forEach(t => {
-      const names = getSignoffs(t.id);
-      const done = names.length > 0;
-      html += `<div class="cl-item${done?' done':''}" id="left-${t.id}" onclick="openSignoff('${t.id}')">
-        <div class="cl-check">${done?'&#10003;':''}</div>
-        <div class="cl-text">
-          <div class="cl-title">${escapeHtml(t.en)}</div>
-          ${names.length ? `<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>` : ''}
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
+  TASKS.forEach(t => {
+    const names = getSignoffs(t.id);
+    const done = names.length > 0;
+    html += `<div class="cl-item${done?' done':''}" id="left-${t.id}" onclick="openSignoff('${t.id}')">
+      <div class="cl-check">${done?'&#10003;':''}</div>
+      <div class="cl-text">
+        <div class="cl-title">${escapeHtml(t.en)}</div>
+        ${names.length ? `<div class="cl-signoffs">${names.map(n=>`<span class="cl-signoff-chip">${escapeHtml(n.name)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
   });
   leftScroll.innerHTML = html;
 }
