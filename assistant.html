@@ -111,46 +111,44 @@
 
   /* ── RIGHT PANEL ── */
   .right-panel { position:relative; z-index:1; flex:1; display:flex; flex-direction:column; min-width:0; background:var(--bg); }
-  .header { display:flex; align-items:center; gap:14px; padding:14px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
-  .header .home-link { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-muted); text-decoration:none; letter-spacing:0.04em; padding:6px 10px; border-radius:5px; }
-  .header .home-link:hover { color:var(--text); }
+  .header { display:flex; align-items:center; gap:14px; padding:14px 20px; flex-shrink:0; }
+  .header .home-link { font-family:'JetBrains Mono',monospace; font-size:13px; color:#d4d4d8; text-decoration:none; letter-spacing:0.04em; padding:6px 12px; border-radius:5px; border:1px solid rgba(139,92,246,0.25); }
+  .header .home-link:hover { color:#ffffff; border-color:rgba(139,92,246,0.6); background:rgba(139,92,246,0.08); }
   .header-logo { width:38px; height:38px; border-radius:9px; background:linear-gradient(135deg,var(--accent),#06b6d4); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; color:#fff; flex-shrink:0; }
   .header-info { flex:1; min-width:0; }
-  .header-title { font-size:18px; font-weight:700; letter-spacing:-0.02em; }
-  .header-subtitle { font-size:11px; color:var(--text-muted); }
-  .icon-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-family:inherit; transition:all .15s; }
-  .icon-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); border-color:var(--border-hover); }
+  .header-curved-loop { flex:1; min-width:0; height:48px; display:flex; align-items:center; overflow:visible; cursor:grab; user-select:none; -webkit-user-select:none; margin-left:6px; margin-right:6px; }
+  .header-curved-loop:active { cursor:grabbing; }
+  .header-curved-loop .clo-svg { width:100%; height:100%; overflow:visible; display:block; }
+  .header-curved-loop .clo-text { font-size:17px; font-weight:700; letter-spacing:0.06em; }
+  .icon-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(139,92,246,0.25); background:transparent; color:#d4d4d8; font-family:inherit; transition:all .15s; }
+  .icon-btn:hover { background:rgba(139,92,246,0.08); color:#ffffff; border-color:rgba(139,92,246,0.6); }
 
   .chat-container { flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
   .chat-container::-webkit-scrollbar { width:5px; }
   .chat-container::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:4px; }
 
-  .welcome-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px 24px; text-align:center; }
-  .welcome-card h2 { font-size:22px; font-weight:700; margin-bottom:10px; }
+  .welcome-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 20px; text-align:center; }
+  .welcome-card h2 { font-size:20px; font-weight:700; margin-bottom:6px; }
   .welcome-card h2 .nebula {
     background: linear-gradient(135deg, #6366f1, #8b5cf6, #3b82f6, #06b6d4);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .welcome-card p { color:var(--text-secondary); font-size:17px; }
-  .welcome-card p .nebula {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text; font-weight:600;
-  }
+  .welcome-card p { color:#ffffff; font-size:14px; }
 
   .main-menu { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:16px; }
   .menu-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 20px 24px; display:flex; flex-direction:column; gap:14px; }
   .menu-section .ms-header { display:flex; flex-direction:column; align-items:center; gap:6px; padding-bottom:16px; border-bottom:1px solid var(--border); text-align:center; }
-  .menu-section .ms-title { font-size:20px; font-weight:700; letter-spacing:-0.02em; }
-  .menu-section .ms-sub { font-size:13px; color:var(--text-muted); }
+  .menu-section .ms-header > div { text-align:center; width:100%; }
+  .menu-section .ms-title { font-size:20px; font-weight:700; letter-spacing:-0.02em; text-align:center; width:100%; }
+  .menu-section .ms-sub { font-size:13px; color:var(--text-muted); text-align:center; }
   .menu-section .ms-items { display:flex; flex-direction:column; gap:8px; }
   .ms-item {
-    background:transparent; border:1px solid transparent; color:var(--text-secondary);
+    background:transparent; border:1px solid transparent; color:#d4d4d8;
     border-radius:6px; padding:14px 12px; font-size:16px; cursor:pointer;
     transition:all .15s; text-align:center; font-family:inherit; font-weight:500;
   }
-  .ms-item:hover { background:rgba(255,255,255,0.03); border-color:var(--border); color:var(--text); }
+  .ms-item:hover { background:rgba(255,255,255,0.03); border-color:rgba(139,92,246,0.3); color:#ffffff; }
   .ms-item:active { background:rgba(255,255,255,0.06); }
 
   /* Chat bubbles */
@@ -242,17 +240,35 @@
 <div class="right-panel">
   <div class="header">
     <a href="index.html" class="home-link">&larr; Home</a>
-    <div class="header-logo">IE</div>
-    <div class="header-info">
-      <div class="header-title">IE Maker Lab</div>
-      <div class="header-subtitle">Student Assistants' Guide</div>
+    <div class="header-curved-loop" id="headerCurvedLoop">
+      <svg class="clo-svg" viewBox="0 0 800 48">
+        <defs>
+          <filter id="cloGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1"/>
+            <feFlood flood-color="#1e40ff" flood-opacity="1" result="color1"/>
+            <feComposite in="color1" in2="blur1" operator="in" result="glow1"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2"/>
+            <feFlood flood-color="#0018ff" flood-opacity="0.9" result="color2"/>
+            <feComposite in="color2" in2="blur2" operator="in" result="glow2"/>
+            <feMerge>
+              <feMergeNode in="glow2"/>
+              <feMergeNode in="glow1"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <path id="headerCurve" d="M-40,24 Q400,64 840,24" fill="none" stroke="transparent"/>
+        </defs>
+        <text xml:space="preserve" class="clo-text" fill="#ffffff" filter="url(#cloGlow)">
+          <textPath href="#headerCurve" startOffset="0" xml:space="preserve"></textPath>
+        </text>
+      </svg>
     </div>
     <button class="icon-btn" onclick="clearChat()">Clear</button>
   </div>
   <div class="chat-container" id="chatContainer">
     <div class="welcome-card glow-card" id="welcomeCard">
       <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
-      <p>Hello <span class="nebula">Student Assistants</span>! Select tasks below.</p>
+      <p>Hello <span style="color:#ffffff;font-weight:600;">Student Assistants</span>! Select tasks below.</p>
     </div>
     <div class="main-menu bento-section" id="presetGrid"></div>
   </div>
@@ -273,6 +289,58 @@
 <div id="toast" class="toast"></div>
 
 <script>
+// ── Curved Loop Header Animation ──
+(function(){
+  const c = document.getElementById('headerCurvedLoop');
+  if(!c) return;
+  const tp = c.querySelector('textPath');
+  const tx = "IE ✦ MAKER ✦ LAB ✦ Student ✦ Assisitants' ✦ Guide ✦  ";
+  const spd = 1.2;
+  let spacing=0, offset=0, dir=-1, drag=false, lx=0, vel=0;
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const m = document.createElementNS(ns, 'text');
+  m.setAttribute('xml:space','preserve');
+  m.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
+  m.textContent = tx;
+  c.querySelector('svg').appendChild(m);
+  spacing = m.getComputedTextLength();
+  m.remove();
+
+  const n = Math.ceil(1000/spacing)+2;
+  tp.textContent = tx.repeat(n);
+  offset = -spacing;
+  tp.setAttribute('startOffset', offset+'px');
+
+  function step(){
+    if(!drag){
+      offset += dir*spd;
+      if(offset <= -spacing) offset += spacing;
+      if(offset > 0) offset -= spacing;
+      tp.setAttribute('startOffset', offset+'px');
+    }
+    requestAnimationFrame(step);
+  }
+
+  c.addEventListener('pointerdown', e => {
+    drag=true; lx=e.clientX; vel=0;
+    c.setPointerCapture(e.pointerId);
+  });
+  c.addEventListener('pointermove', e => {
+    if(!drag) return;
+    vel = e.clientX-lx; lx=e.clientX;
+    offset += vel;
+    if(offset <= -spacing) offset += spacing;
+    if(offset > 0) offset -= spacing;
+    tp.setAttribute('startOffset', offset+'px');
+  });
+  const up = () => { if(drag){ drag=false; dir=vel>0?1:-1; } };
+  c.addEventListener('pointerup', up);
+  c.addEventListener('pointerleave', up);
+
+  requestAnimationFrame(step);
+})();
+
 // ═══════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════
