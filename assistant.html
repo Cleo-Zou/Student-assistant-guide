@@ -565,22 +565,44 @@ const DEFAULT_MAIN_MENU = [
 // ═══════════════════════════════════════
 //  LOAD FROM STORAGE
 // ═══════════════════════════════════════
-function loadTasks() { try { const c=localStorage.getItem('maker_lab_staff_tasks'); if(c) return JSON.parse(c); } catch(e){} return DEFAULT_TASKS; }
-function loadGuide() { try { const c=localStorage.getItem('maker_lab_staff_guide'); if(c) return JSON.parse(c); } catch(e){} return DEFAULT_GUIDE; }
-function loadMenu() { try { const c=localStorage.getItem('maker_lab_staff_menu'); if(c) return JSON.parse(c); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU)); }
+const SYNC_URL = 'http://localhost:3456';
+async function syncLoad(key, fallback) {
+  try {
+    const res = await fetch(`${SYNC_URL}/api/data/${key}`);
+    if (res.ok) { const d = await res.json(); if (d) return d; }
+  } catch (e) { }
+  try { const r = localStorage.getItem('maker_lab_' + key); if (r) return JSON.parse(r); } catch (e) { }
+  return JSON.parse(JSON.stringify(fallback));
+}
+function syncSave(key, data) {
+  localStorage.setItem('maker_lab_' + key, JSON.stringify(data));
+  fetch(`${SYNC_URL}/api/data/${key}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+  }).catch(() => {});
+}
 
-let TASKS = loadTasks();
-let GUIDE = loadGuide();
-let MAIN_MENU = loadMenu();
+let TASKS = DEFAULT_TASKS;
+let GUIDE = DEFAULT_GUIDE;
+let MAIN_MENU = JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU));
 
 // ═══════════════════════════════════════
 //  SIGNOFFS
 // ═══════════════════════════════════════
 let signoffs = {};
-function loadSignoffs() { try { const r=localStorage.getItem('maker_lab_signoffs'); if(r) signoffs=JSON.parse(r); } catch(e) { signoffs={}; } }
-function saveSignoffs() { localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs)); }
+async function loadSignoffs() {
+  try {
+    const res = await fetch(`${SYNC_URL}/api/data/signoffs`);
+    if (res.ok) { const d = await res.json(); if (d) { signoffs = d; return; } }
+  } catch (e) { }
+  try { const r = localStorage.getItem('maker_lab_signoffs'); if (r) signoffs = JSON.parse(r); } catch (e) { signoffs = {}; }
+}
+function saveSignoffs() {
+  localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs));
+  fetch(`${SYNC_URL}/api/data/signoffs`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(signoffs)
+  }).catch(() => {});
+}
 function getSignoffs(id) { return signoffs[id] || []; }
-loadSignoffs();
 
 // ═══════════════════════════════════════
 //  IndexedDB helpers for PDF uploads
@@ -843,19 +865,34 @@ function showToast(msg) {
 }
 
 // ═══════════════════════════════════════
-//  STORAGE EVENTS (cross-tab sync)
+//  POLL SERVER for changes (every 3s)
 // ═══════════════════════════════════════
-window.addEventListener('storage', function(e) {
-  if (e.key === 'maker_lab_staff_tasks') { TASKS = loadTasks(); renderLeftPanel(); }
-  if (e.key === 'maker_lab_staff_guide') { GUIDE = loadGuide(); }
-  if (e.key === 'maker_lab_staff_menu') { MAIN_MENU = loadMenu(); renderMainMenu(); }
-});
+setInterval(async () => {
+  try {
+    const r1 = await fetch(`${SYNC_URL}/api/data/tasks`);
+    if (r1.ok) { const d = await r1.json(); if (d) { TASKS = d; renderLeftPanel(); } }
+    const r2 = await fetch(`${SYNC_URL}/api/data/menu`);
+    if (r2.ok) { const d = await r2.json(); if (d) { MAIN_MENU = d; renderMainMenu(); } }
+    const r3 = await fetch(`${SYNC_URL}/api/data/signoffs`);
+    if (r3.ok) { const d = await r3.json(); if (d) { signoffs = d; renderLeftPanel(); } }
+  } catch (e) { }
+}, 3000);
 
 // ═══════════════════════════════════════
-//  INIT
+//  INIT — load from server then render
 // ═══════════════════════════════════════
-renderLeftPanel();
-renderMainMenu();
+(async function init() {
+  const [tasks, menu] = await Promise.all([
+    syncLoad('tasks', DEFAULT_TASKS),
+    syncLoad('menu', DEFAULT_MAIN_MENU)
+  ]);
+  TASKS = tasks; MAIN_MENU = menu;
+  const guide = await syncLoad('guide', DEFAULT_GUIDE);
+  GUIDE = guide;
+  await loadSignoffs();
+  renderLeftPanel();
+  renderMainMenu();
+})();
 
 // ── Position sticky-menu dropdowns on hover (fixed, not clipped by overflow) ──
 (function() {
