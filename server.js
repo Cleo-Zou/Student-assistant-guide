@@ -64,7 +64,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  IE Maker Lab server running at http://localhost:${PORT}\n`);
   console.log(`  Open this address on every computer in the same network.\n`);
   console.log(`  Data file: ${DATA_FILE}\n`);

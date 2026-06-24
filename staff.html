@@ -410,7 +410,7 @@ const DEFAULT_MAIN_MENU = [
 ];
 
 // ── Sync layer: server first, localStorage fallback ──
-const SYNC_URL = 'http://localhost:3456';
+const SYNC_URL = 'http://192.168.50.2:3456';
 async function syncLoad(key, fallback) {
   try {
     const res = await fetch(`${SYNC_URL}/api/data/${key}`);
