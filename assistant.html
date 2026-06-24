@@ -143,13 +143,50 @@
   .menu-section .ms-title { font-size:20px; font-weight:700; letter-spacing:-0.02em; text-align:center; width:100%; }
   .menu-section .ms-sub { font-size:13px; color:var(--text-muted); text-align:center; }
   .menu-section .ms-items { display:flex; flex-direction:column; gap:8px; }
+
+  /* ── Sticky menu bar with hover-reveal sub-items ── */
+  .sticky-menu-bar {
+    position: sticky; top: 0; z-index: 10;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+    background: var(--bg); padding: 6px 0 10px;
+  }
+  .sticky-menu-section {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 14px; text-align: center; cursor: default;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .sticky-menu-section:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 20px rgba(59,130,246,0.08);
+  }
+  .sticky-menu-section .ms-title {
+    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .sticky-menu-section .ms-sub {
+    font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  }
+  .sticky-menu-section .ms-items-dropdown {
+    position: fixed;
+    background: var(--surface); border: 1px solid var(--border-hover); border-radius: 0 0 var(--radius) var(--radius);
+    padding: 8px; display: flex; flex-direction: column; gap: 4px;
+    opacity: 0; visibility: hidden; transform: translateY(-4px);
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5); z-index: 200;
+    pointer-events: none; min-width: 140px;
+  }
+  .sticky-menu-section:hover .ms-items-dropdown,
+  .sticky-menu-section .ms-items-dropdown.show {
+    opacity: 1; visibility: visible; transform: translateY(0);
+    pointer-events: auto;
+  }
   .ms-item {
     background:transparent; border:1px solid transparent; color:#d4d4d8;
-    border-radius:6px; padding:14px 12px; font-size:16px; cursor:pointer;
+    border-radius:6px; padding:10px 12px; font-size:13px; cursor:pointer;
     transition:all .15s; text-align:center; font-family:inherit; font-weight:500;
   }
-  .ms-item:hover { background:rgba(255,255,255,0.03); border-color:rgba(139,92,246,0.3); color:#ffffff; }
-  .ms-item:active { background:rgba(255,255,255,0.06); }
+  .ms-item:hover { background:rgba(255,255,255,0.05); border-color:rgba(139,92,246,0.3); color:#ffffff; }
+  .ms-item:active { background:rgba(255,255,255,0.08); }
 
   /* Chat bubbles */
   .bubble-row { display:flex; gap:10px; animation:fadeIn .2s ease; max-width:100%; }
@@ -185,6 +222,8 @@
     .left-panel { width:100%; min-width:0; max-height:40vh; border-right:none; border-bottom:1px solid var(--border); }
     .right-panel { height:auto; flex:1; }
     .main-menu { grid-template-columns:1fr; }
+    .sticky-menu-bar { grid-template-columns:1fr; }
+    .sticky-menu-section .ms-items-dropdown { position: relative; box-shadow: none; }
     .chat-container { padding:14px; }
     .bubble { max-width:90%; }
   }
@@ -266,11 +305,11 @@
     <button class="icon-btn" onclick="clearChat()">Clear</button>
   </div>
   <div class="chat-container" id="chatContainer">
+    <div class="sticky-menu-bar" id="presetGrid"></div>
     <div class="welcome-card glow-card" id="welcomeCard">
       <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
       <p>Hello <span style="color:#ffffff;font-weight:600;">Student Assistants</span>! Select tasks below.</p>
     </div>
-    <div class="main-menu bento-section" id="presetGrid"></div>
   </div>
 </div>
 
@@ -630,14 +669,10 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') closeSignoff()
 // ═══════════════════════════════════════
 function renderMainMenu() {
   presetEl.innerHTML = MAIN_MENU.map(m => `
-    <div class="menu-section glow-card">
-      <div class="ms-header">
-        <div>
-          <div class="ms-title">${m.title}</div>
-          <div class="ms-sub">${m.subtitle}</div>
-        </div>
-      </div>
-      <div class="ms-items">
+    <div class="sticky-menu-section glow-card">
+      <div class="ms-title">${m.title}</div>
+      <div class="ms-sub">${m.subtitle}</div>
+      <div class="ms-items-dropdown">
         ${m.subs.map(s => {
           if (s.pdfId) {
             return `<button class="ms-item" data-pdf-id="${s.pdfId}" data-pdf-name="${escapeHtml(s.pdfName||'')}" onclick="openPdf(this)">${s.en}</button>`;
@@ -773,8 +808,8 @@ function feedback(btn, type) {
 }
 function clearChat() {
   if (confirm('Clear all conversations?')) {
-    chatEl.querySelectorAll('.bubble-row').forEach(r => r.remove());
-    if (welcomeEl) welcomeEl.style.display = '';
+    chatEl.querySelectorAll('.bubble-row, .welcome-card').forEach(r => r.remove());
+    if (welcomeEl) { chatEl.appendChild(welcomeEl); welcomeEl.style.display = ''; }
     localStorage.removeItem('maker_lab_history');
   }
 }
@@ -784,12 +819,26 @@ function clearChat() {
 // ═══════════════════════════════════════
 const HIST_KEY = 'maker_lab_history', HIST_TS = 'maker_lab_hist_ts';
 function saveHistory() {
-  try { localStorage.setItem(HIST_KEY, chatEl.innerHTML); localStorage.setItem(HIST_TS, Date.now()); } catch(e) {}
+  try {
+    const clone = chatEl.cloneNode(true);
+    const menu = clone.querySelector('.sticky-menu-bar');
+    if (menu) menu.remove();
+    localStorage.setItem(HIST_KEY, clone.innerHTML);
+    localStorage.setItem(HIST_TS, Date.now());
+  } catch(e) {}
 }
 function loadHistory() {
   try {
     const ts = parseInt(localStorage.getItem(HIST_TS)||'0');
-    if (Date.now()-ts < 3600000) { const h = localStorage.getItem(HIST_KEY); if (h) { chatEl.innerHTML = h; return; } }
+    if (Date.now()-ts < 3600000) {
+      const h = localStorage.getItem(HIST_KEY);
+      if (h) {
+        const menuEl = chatEl.querySelector('.sticky-menu-bar');
+        chatEl.innerHTML = h;
+        if (menuEl) chatEl.insertBefore(menuEl, chatEl.firstChild);
+        return;
+      }
+    }
   } catch(e) {}
 }
 
@@ -818,6 +867,25 @@ window.addEventListener('storage', function(e) {
 // ═══════════════════════════════════════
 renderLeftPanel();
 renderMainMenu();
+
+// ── Position sticky-menu dropdowns on hover (fixed, not clipped by overflow) ──
+(function() {
+  document.querySelectorAll('.sticky-menu-section').forEach(section => {
+    const dropdown = section.querySelector('.ms-items-dropdown');
+    if (!dropdown) return;
+    section.addEventListener('mouseenter', () => {
+      const r = section.getBoundingClientRect();
+      dropdown.style.left = r.left + 'px';
+      dropdown.style.top = r.bottom + 'px';
+      dropdown.style.width = r.width + 'px';
+      dropdown.classList.add('show');
+    });
+    section.addEventListener('mouseleave', () => {
+      dropdown.classList.remove('show');
+    });
+  });
+})();
+
 // ── MagicBento: border glow + spotlight + ripple ──
 (function(){
   const GLOW_RGB = '132,0,255';
