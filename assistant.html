@@ -69,17 +69,17 @@
   .cl-item:hover { background: var(--card-hover); }
 
   /* Universal blue glow on all interactive elements */
-  button, .home-link, .reset-btn, .icon-btn, .ms-item, .feedback-btn, .btn-cancel, .btn-confirm, .cl-item {
+  button, .home-link, .reset-btn, .icon-btn, .ms-item, .btn-cancel, .btn-confirm, .cl-item {
     position: relative; isolation: isolate;
   }
   button::before, .home-link::before, .reset-btn::before, .icon-btn::before, .ms-item::before,
-  .feedback-btn::before, .btn-cancel::before, .btn-confirm::before, .cl-item::before {
+  .btn-cancel::before, .btn-confirm::before, .cl-item::before {
     content: ''; position: absolute; inset: -2px; border-radius: inherit;
     background: rgba(59,130,246,0); filter: blur(8px); z-index: -1;
     transition: background 0.35s ease;
   }
   button:hover::before, .home-link:hover::before, .reset-btn:hover::before, .icon-btn:hover::before,
-  .ms-item:hover::before, .feedback-btn:hover::before, .btn-cancel:hover::before, .btn-confirm:hover::before,
+  .ms-item:hover::before, .btn-cancel:hover::before, .btn-confirm:hover::before,
   .cl-item:hover::before {
     background: rgba(59,130,246,0.22);
   }
@@ -210,10 +210,6 @@
   .typing-dots span:nth-child(2) { animation-delay:.2s; } .typing-dots span:nth-child(3) { animation-delay:.4s; }
   @keyframes bounce { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-6px); } }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  .feedback-row { margin-top:10px; padding-top:8px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px; }
-  .feedback-btn { padding:3px 12px; border-radius:10px; font-size:11px; cursor:pointer; background:transparent; border:1px solid var(--border); color:var(--text-muted); font-family:inherit; transition:all .15s; }
-  .feedback-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); }
-  .feedback-btn.active { background:var(--accent-muted); color:var(--accent); border-color:var(--accent); }
 
   .toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:#18181b; border:1px solid var(--border); color:var(--text); padding:10px 22px; border-radius:8px; font-size:13px; z-index:100; display:none; pointer-events:none; }
 
@@ -694,7 +690,7 @@ function showGuideInline(btn){
   const html=buildGuideHTML(guide);
   if(welcomeEl)welcomeEl.style.display='none';
   addUserBubble(btn.textContent.trim());saveHistory();chatEl.scrollTop=chatEl.scrollHeight;
-  if(html){addBotBubble(html+`<div class="feedback-row">Was this helpful? <button class="feedback-btn" onclick="feedback(this,'yes')">Yes</button><button class="feedback-btn" onclick="feedback(this,'no')">No</button></div>`);}
+  if(html){addBotBubble(html);}
   saveHistory();chatEl.scrollTop=chatEl.scrollHeight;
 }
 
@@ -748,7 +744,7 @@ async function doSend(label, query) {
   hideTyping();
   const html = buildResponse(query);
   if (html) {
-    addBotBubble(html + `<div class="feedback-row">Was this helpful? <button class="feedback-btn" onclick="feedback(this,'yes')">Yes</button><button class="feedback-btn" onclick="feedback(this,'no')">No</button></div>`);
+    addBotBubble(html);
   } else {
     addBotBubble(`No matching guide found for "<b>${escapeHtml(label)}</b>". Try a different option.`);
   }
@@ -800,12 +796,6 @@ function showTyping() {
   chatEl.appendChild(row); chatEl.scrollTop = chatEl.scrollHeight;
 }
 function hideTyping() { const r = document.getElementById('typingRow'); if (r) r.remove(); }
-function feedback(btn, type) {
-  const row = btn.parentElement;
-  row.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  showToast(type === 'yes' ? 'Thanks for your feedback!' : "We'll keep improving!");
-}
 function clearChat() {
   if (confirm('Clear all conversations?')) {
     chatEl.querySelectorAll('.bubble-row, .welcome-card').forEach(r => r.remove());

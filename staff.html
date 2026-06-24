@@ -129,30 +129,49 @@
   .btn.primary:hover { background:var(--accent-hover); }
   .btn.primary.dirty { box-shadow:0 0 14px rgba(234,179,8,0.5); }
 
-  .editor-tabs { display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 24px; }
-  .editor-tab { padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none; }
-  .editor-tab:hover { color:var(--text); }
-  .editor-tab.active { color:var(--accent);border-bottom-color:var(--accent); }
   .editor-body { flex:1;overflow-y:auto;padding:24px; }
   .editor-body::-webkit-scrollbar { width:5px; }
   .editor-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08);border-radius:4px; }
 
-  .guide-list-item { padding:14px 16px;border-radius:6px;cursor:pointer;transition:all .12s;border:1px solid transparent;margin-bottom:3px;display:flex;align-items:center;gap:12px; }
-  .guide-list-item:hover { background:var(--card-hover); }
-  .guide-list-item.active { background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2); }
-  .guide-list-item .g-key { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);min-width:160px; }
-  .guide-list-item .g-title-preview { font-weight:600;font-size:14px;flex:1; }
+  /* Dashboard 2x2 card grid */
+  .dashboard-grid { display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(280px,1fr);gap:20px;min-height:100%; }
+  .dash-card { background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 20px 18px;display:flex;flex-direction:column;cursor:default;transition:all .15s;overflow:hidden; }
+  .dash-card:hover { border-color:rgba(139,92,246,0.3); }
+  .dash-card .dc-title { font-size:20px;font-weight:700;text-align:center;letter-spacing:-0.02em;margin-bottom:2px;cursor:pointer;
+    background: linear-gradient(135deg, #818cf8, #6366f1, #3b82f6, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    transition: opacity .15s;
+  }
+  .dash-card .dc-title:hover { opacity:0.75; }
+  .dash-card .dc-sub { font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:14px;cursor:pointer; }
+  .dash-card .dc-sub:hover { color:#a5b4fc; }
+  .dash-card .dc-subs { flex:1;display:flex;flex-direction:column;gap:6px;overflow-y:auto; }
+  .dash-card .dc-subs::-webkit-scrollbar { width:3px; }
+  .dash-card .dc-subs::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.06);border-radius:3px; }
+  .dc-sub-item { padding:9px 14px;border-radius:6px;font-size:14px;cursor:pointer;border:1px solid transparent;transition:all .12s;font-weight:500;color:#d4d4d8;text-align:center; }
+  .dc-sub-item:hover { background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.25);color:#ffffff; }
+  .dc-sub-item .dc-type { font-size:9px;padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.06);color:var(--text-muted);margin-left:6px; }
+  .dash-add-card { background:transparent;border:2px dashed var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;gap:10px; }
+  .dash-add-card:hover { border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.04); }
+  .dash-add-card .add-icon { font-size:40px;color:var(--text-muted);transition:color .2s; }
+  .dash-add-card:hover .add-icon { color:rgba(139,92,246,0.8); }
+  .dash-add-card .add-label { font-size:15px;font-weight:600;color:var(--text-muted);transition:color .2s; }
+  .dash-add-card:hover .add-label { color:#d4d4d8; }
 
-  .menu-editor-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px; }
-  .menu-editor-section { background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px; }
-  .menu-editor-section .me-title { font-size:18px;font-weight:700;margin-bottom:3px;cursor:pointer;text-align:center; }
-  .menu-editor-section .me-subtitle { font-size:12px;color:var(--text-muted);margin-bottom:14px;cursor:pointer;text-align:center; }
-  .me-sub-item { padding:10px 12px;border-radius:5px;margin-bottom:5px;font-size:14px;cursor:pointer;border:1px solid transparent;display:flex;align-items:center;gap:8px;transition:all .12s;font-weight:500; }
-  .me-sub-item:hover { background:rgba(255,255,255,0.03);border-color:var(--border); }
-  .me-sub-item.active { background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2); }
-  .me-sub-item .me-type { font-size:10px;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.06);color:var(--text-muted); }
-  .btn-add-sm { width:100%;padding:10px;margin-top:10px;background:transparent;border:1px dashed var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s; }
-  .btn-add-sm:hover { border-color:var(--accent);color:var(--accent); }
+  /* Back button */
+  .back-link { display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#d4d4d8;cursor:pointer;padding:6px 14px;border-radius:5px;border:1px solid rgba(139,92,246,0.25);transition:all .15s;margin-bottom:18px;background:none; }
+  .back-link:hover { color:#ffffff;border-color:rgba(139,92,246,0.6);background:rgba(139,92,246,0.08);box-shadow:0 0 14px rgba(59,130,246,0.2); }
+  .btn-add-sm { width:100%;padding:10px;margin-top:10px;background:transparent;border:1px dashed rgba(139,92,246,0.2);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s; }
+  .btn-add-sm:hover { border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,0.05);box-shadow:0 0 12px rgba(59,130,246,0.15); }
+
+  /* Blue glow on hover for all interactive elements */
+  .field-input:hover,.field-textarea:hover,.field-select:hover { border-color:rgba(59,130,246,0.4);box-shadow:0 0 10px rgba(59,130,246,0.08); }
+  .field-input:focus,.field-textarea:focus,.field-select:focus { border-color:var(--accent);box-shadow:0 0 14px rgba(59,130,246,0.18); }
+  .step-row:hover { border-color:rgba(139,92,246,0.2);box-shadow:0 0 8px rgba(59,130,246,0.06); }
+  .dc-sub-item:hover { box-shadow:0 0 10px rgba(59,130,246,0.12); }
+  .btn-sm:hover { box-shadow:0 0 10px rgba(59,130,246,0.15); }
+  .tut-toggle-btn:hover { box-shadow:0 0 8px rgba(59,130,246,0.1); }
+  .step-del:hover { text-shadow:0 0 8px rgba(239,68,68,0.5); }
 
   .form-section { margin-bottom:22px; }
   .form-section-title { font-size:14px;font-weight:700;margin-bottom:12px;text-align:center; }
@@ -193,7 +212,7 @@
     body{flex-direction:column;}
     .left-panel{width:100%;min-width:0;max-height:40vh;border-right:none;border-bottom:1px solid var(--border);}
     .right-panel{height:auto;flex:1;}
-    .menu-editor-grid{grid-template-columns:1fr;}
+    .dashboard-grid{grid-template-columns:1fr;grid-template-rows:auto;}
   }
 /* ── MagicBento border glow ── */
 .glow-card {
@@ -278,9 +297,7 @@
     </div>
     <button class="btn primary" id="saveAllBtn" onclick="saveAll()">Save All</button>
   </div>
-  <div class="editor-body" id="editorBody">
-    <div class="empty-state">Select a tab above to start editing.</div>
-  </div>
+  <div class="editor-body" id="editorBody"></div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -465,6 +482,11 @@ function showToast(msg) {
   setTimeout(()=>{t.style.display='none';},2200);
 }
 function markDirty(){state.dirty=true;saveAllBtn.classList.add('dirty');}
+function clearDirty(){state.dirty=false;saveAllBtn.classList.remove('dirty');}
+function saveMenuData(){saveToStorage('maker_lab_staff_menu',state.menu);clearDirty();}
+function saveTasksData(){saveToStorage('maker_lab_staff_tasks',state.tasks);clearDirty();}
+function saveGuideData(){saveToStorage('maker_lab_staff_guide',state.guide);clearDirty();}
+function saveAllData(){saveTasksData();saveGuideData();saveMenuData();}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -507,125 +529,207 @@ function cancelTaskEdit(){state.editingTaskId=null;renderLeftPanel();}
 function saveTaskEdit(id){
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
   t.en=document.getElementById(`te-en-${id}`)?.value||'';
-  state.editingTaskId=null;markDirty();renderLeftPanel();showToast('Task updated. Save to persist.');
+  state.editingTaskId=null;saveTasksData();renderLeftPanel();showToast('Task saved.');
 }
 function addNewTask(){
   const ids=state.tasks.map(t=>parseInt(t.id.replace('d',''))||0);
   state.tasks.push({id:'d'+(Math.max(0,...ids)+1),en:''});
-  state.editingTaskId=state.tasks[state.tasks.length-1].id;markDirty();renderLeftPanel();
+  state.editingTaskId=state.tasks[state.tasks.length-1].id;saveTasksData();renderLeftPanel();
   setTimeout(()=>{const c=document.querySelector('.task-editor-card');if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }
 function deleteTask(id){
   if(!confirm(`Delete "${id}"?`))return;
-  state.tasks=state.tasks.filter(t=>t.id!==id);state.editingTaskId=null;markDirty();renderLeftPanel();
+  state.tasks=state.tasks.filter(t=>t.id!==id);state.editingTaskId=null;saveTasksData();renderLeftPanel();
   showToast('Task deleted.');
 }
 
 // ═══════════════════════════════════════
-//  RIGHT PANEL
+//  RIGHT PANEL — Dashboard + Editor
 // ═══════════════════════════════════════
-function switchEditorTab(tab){
-  state.editorTab=tab;state.selectedSubItem=null;
-  document.querySelectorAll('.editor-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.editor-tab')?.classList.add('active');
-  renderEditorBody();
-}
-function renderEditorBody(){
-  renderMenuEditor();
-}
+let pendingMenuPdf=null;
+let menuSubMode=null; // 'pdf' | 'guide' | null
 
-// ── MENU EDITOR ──
-function renderMenuEditor(){
-  let h=`<div class="menu-editor-grid bento-section">`;
+// ── Dashboard view ──
+function renderDashboard(){
+  state.selectedSubItem=null;state.editingCategory=null;menuSubMode=null;pendingMenuPdf=null;
+  let h=`<div class="dashboard-grid">`;
   state.menu.forEach((m,mi)=>{
-    h+=`<div class="menu-editor-section glow-card">
-      <div class="me-title" onclick="editMenuCategory(${mi})">${m.title}</div>
-      <div class="me-subtitle" onclick="editMenuCategory(${mi})">${m.subtitle}</div>`;
+    h+=`<div class="dash-card glow-card">
+      <div class="dc-title" onclick="event.stopPropagation();openCardEditor(${mi})" title="Click to edit card">${m.title}</div>
+      <div class="dc-sub" onclick="event.stopPropagation();openCardEditor(${mi})" title="Click to edit card">${m.subtitle}</div>
+      <div class="dc-subs">`;
     m.subs.forEach((s,si)=>{
-      const type=s.pdf||s.pdfId?'PDF':'GUIDE',active=state.selectedSubItem&&state.selectedSubItem.mi===mi&&state.selectedSubItem.si===si;
-      h+=`<div class="me-sub-item${active?' active':''}" onclick="editSubItem(${mi},${si})"><span style="flex:1;">${s.en}</span><span class="me-type">${type}</span></div>`;
+      const type=s.pdf||s.pdfId?'PDF':'GUIDE';
+      h+=`<div class="dc-sub-item" onclick="event.stopPropagation();openSubItemEditor(${mi},${si})">${s.en}<span class="dc-type">${type}</span></div>`;
     });
-    h+=`<button class="btn-add-sm" onclick="addSubItem(${mi})">+ Add Item</button></div>`;
+    h+=`</div></div>`;
   });
+  // Add New Equipment card
+  h+=`<div class="dash-add-card glow-card" onclick="openNewEquipmentForm()">
+    <div class="add-icon">+</div>
+    <div class="add-label">Add New Equipment</div>
+  </div>`;
   h+=`</div>`;
+  editorBody.innerHTML=h;
+  editorBody.scrollTop=0;
+}
 
-  if(state.selectedSubItem){
-    const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si],keys=Object.keys(state.guide);
-    // Determine which mode: if menuSubMode is null, derive from data
-    if(menuSubMode===null) menuSubMode=(s.guide&&!s.pdfId)?'guide':'pdf';
-    const isGuide=menuSubMode==='guide';
-    h+=`<div style="margin-top:24px;padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
-      <div class="form-section-title">Edit: ${s.en} (${state.menu[mi].title})</div>
-      <div class="form-section"><div class="field-label">Label</div><input class="field-input" id="si-en" value="${escAttr(s.en||'')}" oninput="markDirty()"></div>
-      <div class="field-label" style="margin-top:4px;">Content Type <span style="font-weight:400;color:var(--text-muted);">— choose one of the two formats below</span></div>
-      <div style="display:flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px;">
-        <button type="button" id="sub-pdf-btn" class="tut-toggle-btn${!isGuide?' active':''}" onclick="switchSubMode('pdf')">Upload PDF</button>
-        <button type="button" id="sub-guide-btn" class="tut-toggle-btn${isGuide?' active':''}" onclick="switchSubMode('guide')">Edit Guide</button>
-      </div>
-
-      <div id="sub-pdf-section" style="${isGuide?'display:none;':''}">
-        <div class="pdf-upload-box" id="pdfUploadBox" onclick="document.getElementById('pdfFileInput').click()">
-          <span id="pdfUploadIcon">&#128206;</span>
-          <span id="pdfUploadText">${s.pdfId?esc(s.pdfName||''):(s.pdf?esc(s.pdf):'Choose File')}</span>
-          <span id="pdfUploadClose" style="${s.pdfId||s.pdf?'':'display:none;'}position:absolute;top:4px;right:10px;cursor:pointer;color:#ef4444;font-size:18px;font-weight:700;line-height:1;" onclick="event.stopPropagation();clearMenuPdf()">&times;</span>
-          <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handleMenuPdfSelect()">
-        </div>
-      </div>
-
-      <div id="sub-guide-section" style="${!isGuide?'display:none;':''}">
-        <input class="field-input" id="si-gtitle" value="${escAttr(s.guide&&s.guide.title||'')}" oninput="markDirty()" placeholder="Guide title">
-        <textarea class="field-textarea" id="si-gbody" oninput="markDirty()" style="margin-top:6px;" placeholder="Guide body">${esc(s.guide&&s.guide.body||'')}</textarea>
-        <div class="field-label" style="margin-top:8px;">Steps</div>
-        <div id="si-steps">
-          ${(s.guide&&s.guide.steps||[]).map((st,i)=>`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(st)}" id="si-st-${i}" oninput="markDirty()" placeholder="Step text"></div><button class="step-del" onclick="deleteMenuStep(${i})">&times;</button></div>`).join('')}
-        </div>
-        <button class="btn-add-sm" onclick="addMenuStep()">+ Add Step</button>
-      </div>
-
-      <div style="margin-top:14px;display:flex;gap:10px;">
-        <button class="btn-sm accent" onclick="saveSubItem()">Save</button>
-        <button class="btn-sm" onclick="state.selectedSubItem=null;menuSubMode=null;pendingMenuPdf=null;renderEditorBody();">Close</button>
-        <button class="btn-sm danger" onclick="deleteSubItem()" style="margin-left:auto;">Delete</button>
-      </div>
+// ── Card Editor (edit title, subtitle, tasks, delete card) ──
+function openCardEditor(mi){
+  state.editingCategory=mi;state.selectedSubItem=null;menuSubMode=null;pendingMenuPdf=null;
+  renderCardEditor();
+}
+function renderCardEditor(){
+  const mi=state.editingCategory,m=state.menu[mi];
+  let h=`<button class="back-link" onclick="renderDashboard()">&larr; Back to Dashboard</button>
+  <div style="padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);max-width:650px;">
+    <div class="form-section-title">Edit Card: ${m.title}</div>
+    <div class="form-section"><div class="field-label">Title</div><input class="field-input" id="mc-title" value="${escAttr(m.title||'')}" oninput="markDirty()"></div>
+    <div class="form-section"><div class="field-label">Subtitle</div><input class="field-input" id="mc-sub" value="${escAttr(m.subtitle||'')}" oninput="markDirty()"></div>
+    <div class="field-label" style="margin-top:12px;">Tasks (sub-items)</div>
+    <div id="mc-subs">`;
+  m.subs.forEach((s,si)=>{
+    h+=`<div class="step-row">
+      <span class="step-num">${si+1}</span>
+      <div class="step-inputs"><input id="mc-sub-${si}" value="${escAttr(s.en||'')}" oninput="markDirty()" placeholder="Task name"></div>
+      <button class="step-del" onclick="deleteCardSub(${si})">&times;</button>
     </div>`;
-  }
-  if(state.editingCategory!=null){
-    const m=state.menu[state.editingCategory];
-    h+=`<div style="margin-top:24px;padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
-      <div class="form-section-title">Edit Category: ${m.title}</div>
-      <div class="form-section"><div class="field-label">Title</div><input class="field-input" id="mc-title" value="${escAttr(m.title||'')}" oninput="markDirty()"></div>
-      <div class="form-section"><div class="field-label">Subtitle</div><input class="field-input" id="mc-sub" value="${escAttr(m.subtitle||'')}" oninput="markDirty()"></div>
-      <button class="btn-sm accent" onclick="saveMenuCategory()">Save</button>
-      <button class="btn-sm" onclick="state.editingCategory=null;renderEditorBody();">Close</button>
-    </div>`;
-  }
+  });
+  h+=`</div>
+    <button class="btn-add-sm" onclick="addCardSub()">+ Add Task</button>
+    <div style="margin-top:18px;display:flex;gap:10px;">
+      <button class="btn-sm accent" onclick="saveCardEditor()">Save Card</button>
+      <button class="btn-sm" onclick="renderDashboard()">Close</button>
+      <button class="btn-sm danger" onclick="deleteCard(${mi})" style="margin-left:auto;">Delete Card</button>
+    </div>
+  </div>`;
+  editorBody.innerHTML=h;
+  editorBody.scrollTop=0;
+}
+function addCardSub(){
+  const mi=state.editingCategory;
+  state.menu[mi].subs.push({en:'New Task'});
+  markDirty();renderCardEditor();
+}
+function deleteCardSub(si){
+  state.menu[state.editingCategory].subs.splice(si,1);
+  markDirty();renderCardEditor();
+}
+function saveCardEditor(){
+  const mi=state.editingCategory,m=state.menu[mi];
+  m.title=document.getElementById('mc-title')?.value?.trim()||m.title;
+  m.subtitle=document.getElementById('mc-sub')?.value?.trim()||'';
+  m.subs.forEach((s,i)=>{
+    const el=document.getElementById('mc-sub-'+i);
+    if(el)s.en=el.value.trim()||s.en;
+  });
+  state.editingCategory=null;
+  saveMenuData();showToast('Card saved.');
+  renderDashboard();
+}
+function deleteCard(mi){
+  if(!confirm(`Delete entire "${state.menu[mi].title}" card and all its tasks?`))return;
+  state.menu.splice(mi,1);
+  saveMenuData();showToast('Card deleted.');
+  renderDashboard();
+}
+
+// ── Sub-Item Editor (full page) ──
+function openSubItemEditor(mi,si){
+  state.selectedSubItem={mi,si};state.editingCategory=null;pendingMenuPdf=null;menuSubMode=null;
+  renderSubItemEditor();
+}
+function renderSubItemEditor(){
+  const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si];
+  if(menuSubMode===null) menuSubMode=(s.guide&&!s.pdfId)?'guide':'pdf';
+  const isGuide=menuSubMode==='guide';
+  let h=`<button class="back-link" onclick="renderDashboard()">&larr; Back to Dashboard</button>
+  <div style="padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);max-width:700px;">
+    <div class="form-section-title">Edit: ${s.en} <span style="font-weight:400;color:var(--text-muted);">(${state.menu[mi].title})</span></div>
+    <div class="form-section"><div class="field-label">Label</div><input class="field-input" id="si-en" value="${escAttr(s.en||'')}" oninput="markDirty()"></div>
+    <div class="field-label" style="margin-top:4px;">Content Type</div>
+    <div style="display:flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px;">
+      <button type="button" id="sub-pdf-btn" class="tut-toggle-btn${!isGuide?' active':''}" onclick="switchSubMode('pdf')">Upload PDF</button>
+      <button type="button" id="sub-guide-btn" class="tut-toggle-btn${isGuide?' active':''}" onclick="switchSubMode('guide')">Edit Guide</button>
+    </div>
+    <div id="sub-pdf-section" style="${isGuide?'display:none;':''}">
+      <div class="pdf-upload-box" id="pdfUploadBox" onclick="document.getElementById('pdfFileInput').click()">
+        <span id="pdfUploadIcon">&#128206;</span>
+        <span id="pdfUploadText">${s.pdfId?esc(s.pdfName||''):(s.pdf?esc(s.pdf):'Choose File')}</span>
+        <span id="pdfUploadClose" style="${s.pdfId||s.pdf?'':'display:none;'}position:absolute;top:4px;right:10px;cursor:pointer;color:#ef4444;font-size:18px;font-weight:700;line-height:1;" onclick="event.stopPropagation();clearMenuPdf()">&times;</span>
+        <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handleMenuPdfSelect()">
+      </div>
+    </div>
+    <div id="sub-guide-section" style="${!isGuide?'display:none;':''}">
+      <input class="field-input" id="si-gtitle" value="${escAttr(s.guide&&s.guide.title||'')}" oninput="markDirty()" placeholder="Guide title">
+      <textarea class="field-textarea" id="si-gbody" oninput="markDirty()" style="margin-top:6px;" placeholder="Guide body">${esc(s.guide&&s.guide.body||'')}</textarea>
+      <div class="field-label" style="margin-top:8px;">Steps</div>
+      <div id="si-steps">
+        ${(s.guide&&s.guide.steps||[]).map((st,i)=>`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(st)}" id="si-st-${i}" oninput="markDirty()" placeholder="Step text"></div><button class="step-del" onclick="deleteMenuStep(${i})">&times;</button></div>`).join('')}
+      </div>
+      <button class="btn-add-sm" onclick="addMenuStep()">+ Add Step</button>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;">
+      <button class="btn-sm accent" onclick="saveSubItem()">Save</button>
+      <button class="btn-sm" onclick="renderDashboard()">Close</button>
+      <button class="btn-sm danger" onclick="deleteSubItem()" style="margin-left:auto;">Delete</button>
+    </div>
+  </div>`;
   editorBody.innerHTML=h;
 }
-function editMenuCategory(mi){state.editingCategory=mi;state.selectedSubItem=null;menuSubMode=null;pendingMenuPdf=null;renderEditorBody();}
-function saveMenuCategory(){
-  const mi=state.editingCategory;if(mi==null)return;
-  state.menu[mi].title=document.getElementById('mc-title')?.value||'';
-  state.menu[mi].subtitle=document.getElementById('mc-sub')?.value||'';
-  state.editingCategory=null;markDirty();renderEditorBody();showToast('Category updated.');
-}
-function editSubItem(mi,si){state.selectedSubItem={mi,si};state.editingCategory=null;pendingMenuPdf=null;menuSubMode=null;renderEditorBody();}
-async function deleteSubItem(){if(!confirm('Delete?'))return;const{mi,si}=state.selectedSubItem;const s=state.menu[mi].subs[si];if(s&&s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}state.menu[mi].subs.splice(si,1);state.selectedSubItem=null;pendingMenuPdf=null;menuSubMode=null;markDirty();renderEditorBody();}
-function addSubItem(mi){state.menu[mi].subs.push({en:'New Item'});menuSubMode='pdf';markDirty();renderEditorBody();}
 
+// ── New Equipment Form ──
+function openNewEquipmentForm(){
+  state.selectedSubItem=null;state.editingCategory=null;menuSubMode=null;pendingMenuPdf=null;
+  let h=`<button class="back-link" onclick="renderDashboard()">&larr; Back to Dashboard</button>
+  <div style="padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);max-width:600px;">
+    <div class="form-section-title">Add New Equipment</div>
+    <div class="form-section"><div class="field-label">Equipment Name</div><input class="field-input" id="ne-title" placeholder="e.g. UV Printer"></div>
+    <div class="form-section"><div class="field-label">Short Description</div><input class="field-input" id="ne-sub" placeholder="e.g. Print, cure, clean"></div>
+    <div class="field-label" style="margin-top:12px;">Tasks</div>
+    <div id="ne-tasks">
+      <div class="step-row"><span class="step-num">1</span><div class="step-inputs"><input id="ne-task-0" placeholder="Task name" oninput="markDirty()"></div></div>
+      <div class="step-row"><span class="step-num">2</span><div class="step-inputs"><input id="ne-task-1" placeholder="Task name" oninput="markDirty()"></div></div>
+    </div>
+    <button class="btn-add-sm" onclick="addNewEquipTask()">+ Add Task</button>
+    <div style="margin-top:16px;display:flex;gap:10px;">
+      <button class="btn-sm accent" onclick="saveNewEquipment()">Create Equipment</button>
+      <button class="btn-sm" onclick="renderDashboard()">Cancel</button>
+    </div>
+  </div>`;
+  editorBody.innerHTML=h;
+}
+function addNewEquipTask(){
+  const container=document.getElementById('ne-tasks');
+  const i=container.children.length;
+  const row=document.createElement('div');row.className='step-row';
+  row.innerHTML=`<span class="step-num">${i+1}</span><div class="step-inputs"><input id="ne-task-${i}" placeholder="Task name" oninput="markDirty()"></div>`;
+  container.appendChild(row);
+}
+function saveNewEquipment(){
+  const title=document.getElementById('ne-title')?.value?.trim();
+  if(!title){showToast('Please enter an equipment name.');return;}
+  const subtitle=document.getElementById('ne-sub')?.value?.trim()||'';
+  const id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const subs=[];
+  document.querySelectorAll('#ne-tasks input').forEach(inp=>{
+    const v=inp.value.trim();if(v)subs.push({en:v});
+  });
+  if(!subs.length)subs.push({en:'Use '+title});
+  state.menu.push({id,title:title.toUpperCase(),subtitle,subs});
+  saveMenuData();showToast('New equipment saved.');
+  renderDashboard();
+}
 
 // ── Menu PDF / Guide mode ──
-let pendingMenuPdf=null;
-let menuSubMode=null; // 'pdf' | 'guide' | null (null = derive from data)
-
 function switchSubMode(mode){
   menuSubMode=mode;
-  // Clear the inactive side's data from the sub-item
   if(state.selectedSubItem){
     var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
     if(mode==='pdf'){ delete s.guide; pendingMenuPdf=null; }
     else{ if(s.pdfId){s._oldPdfId=s.pdfId;} delete s.pdfId;delete s.pdfName;delete s.pdf; pendingMenuPdf=null; }
   }
-  markDirty();renderEditorBody();
+  markDirty();renderSubItemEditor();
 }
 
 // ── Menu PDF Upload ──
@@ -640,7 +744,7 @@ function handleMenuPdfSelect(){
 }
 function clearMenuPdf(){
   if(state.selectedSubItem){var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];if(s.pdfId){s._oldPdfId=s.pdfId;}delete s.pdfId;delete s.pdfName;delete s.pdf;}
-  pendingMenuPdf=null;renderEditorBody();markDirty();
+  pendingMenuPdf=null;renderSubItemEditor();markDirty();
 }
 
 // ── Menu Guide Steps ──
@@ -660,33 +764,29 @@ function addMenuStep(){
   var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
   if(!s.guide)s.guide={};
   if(!s.guide.steps)s.guide.steps=[];
-  s.guide.steps.push('');markDirty();renderEditorBody();
+  s.guide.steps.push('');markDirty();renderSubItemEditor();
 }
 function deleteMenuStep(i){
   syncMenuFormToState();
   var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
   if(s.guide&&s.guide.steps)s.guide.steps.splice(i,1);
-  markDirty();renderEditorBody();
+  markDirty();renderSubItemEditor();
 }
 
 async function saveSubItem(){
   const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si];
   s.en=document.getElementById('si-en')?.value||'';
   delete s.q;
-
   if(menuSubMode==='guide'){
-    // Guide mode — clear PDF, save guide from DOM
     if(s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
     delete s.pdfId;delete s.pdfName;delete s.pdf;
     if(s._oldPdfId){try{await idbDelete(s._oldPdfId);}catch(e){} delete s._oldPdfId;}
     pendingMenuPdf=null;
-
     syncMenuFormToState();
     if(!s.guide||(!s.guide.title&&!s.guide.body&&(!s.guide.steps||!s.guide.steps.length))){
       delete s.guide;
     }
   }else{
-    // PDF mode (default) — clear guide, save PDF
     delete s.guide;
     if(s._oldPdfId){try{await idbDelete(s._oldPdfId);}catch(e){} delete s._oldPdfId;}
     if(pendingMenuPdf){
@@ -696,13 +796,10 @@ async function saveSubItem(){
         delete s.pdf;s.pdfId=pendingMenuPdf.id;s.pdfName=pendingMenuPdf.name;
         pendingMenuPdf=null;
       }catch(e){showToast('Failed to store PDF: '+e.message);return;}
-    }else if(!s.pdfId&&!s.pdf){
-      showToast('Please select a PDF file first.');return;
     }
   }
-
   menuSubMode=null;
-  markDirty();showToast('Sub-item saved.');renderEditorBody();
+  saveAllData();showToast('Sub-item saved.');renderSubItemEditor();
 }
 
 async function deleteSubItem(){
@@ -712,80 +809,14 @@ async function deleteSubItem(){
   if(s&&s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
   state.menu[mi].subs.splice(si,1);
   state.selectedSubItem=null;pendingMenuPdf=null;
-  markDirty();renderEditorBody();
+  saveMenuData();renderDashboard();
 }
-function addSubItem(mi){state.menu[mi].subs.push({en:'New Item'});markDirty();renderEditorBody();}
-
-// ── GUIDES EDITOR ──
-function renderGuideEditor(){
-  const keys=Object.keys(state.guide);
-  let h=`<div style="display:flex;gap:18px;height:100%;"><div style="width:300px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--border);padding-right:12px;">`;
-  h+=`<button class="btn-add-sm" onclick="addNewGuide()" style="margin-bottom:12px;">+ New Guide</button>`;
-  keys.forEach(k=>{
-    const g=state.guide[k],active=state.selectedGuide===k;
-    h+=`<div class="guide-list-item${active?' active':''}" onclick="selectGuide('${k}')"><span class="g-title-preview">${g.title||k}</span></div>`;
-  });
-  h+=`</div><div style="flex:1;overflow-y:auto;">`;
-  if(state.selectedGuide&&state.guide[state.selectedGuide])h+=renderGuideDetail(state.selectedGuide,state.guide[state.selectedGuide]);
-  else h+=`<div class="empty-state">Select a guide to edit.</div>`;
-  h+=`</div></div>`;editorBody.innerHTML=h;
-}
-function renderGuideDetail(k,g){
-  const hasSteps=g.steps&&Array.isArray(g.steps),hasLinks=g.links,hasEquip=g.equipment;
-  let h=`<div class="form-section-title" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);margin-bottom:18px;">${esc(k)}</div>`;
-  h+=`<div class="form-section"><div class="field-label">Title</div><input class="field-input" id="g-title" value="${escAttr(g.title||'')}" oninput="markDirty()"></div>`;
-  h+=`<div class="form-section"><div class="field-label">Body</div><textarea class="field-textarea" id="g-body" oninput="markDirty()">${esc(g.body||'')}</textarea></div>`;
-  h+=`<div class="form-section"><div class="field-label">Tag</div><select class="field-select" id="g-tag" style="max-width:200px;" onchange="markDirty()"><option value="" ${!g.tag?'selected':''}>(none)</option><option value="coming" ${g.tag==='coming'?'selected':''}>coming</option><option value="daily" ${g.tag==='daily'?'selected':''}>daily</option><option value="warning" ${g.tag==='warning'?'selected':''}>warning</option></select></div>`;
-  if(hasSteps){
-    h+=`<div class="form-section"><div class="form-section-title">Steps</div>`;
-    g.steps.forEach((s,i)=>{h+=`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(s)}" id="st-${i}" oninput="markDirty()" placeholder="Step text"></div><button class="step-del" onclick="deleteStep(${i})">&times;</button></div>`;});
-    h+=`<button class="btn-add-sm" onclick="addStep()">+ Add Step</button></div>`;
-  }
-  if(hasLinks){
-    h+=`<div class="form-section"><div class="form-section-title">Links</div>`;
-    g.links.forEach((lk,i)=>{h+=`<div style="display:flex;gap:8px;margin-bottom:5px;align-items:center;"><input class="field-input" value="${escAttr(lk)}" id="lk-${i}" oninput="markDirty()" style="flex:1;"><button class="step-del" onclick="deleteLink(${i})">&times;</button></div>`;});
-    h+=`<button class="btn-add-sm" onclick="addLink()">+ Add Link</button></div>`;
-  }
-  if(hasEquip){
-    h+=`<div class="form-section"><div class="form-section-title">Equipment</div>`;
-    g.equipment.forEach((eq,i)=>{h+=`<div class="step-row"><span class="step-num">${i+1}</span><div class="step-inputs"><input value="${escAttr(eq.en||'')}" id="eq-${i}-en" oninput="markDirty()" placeholder="Name"><input value="${escAttr(eq.q||'')}" id="eq-${i}-q" oninput="markDirty()" placeholder="Query key" style="margin-top:6px;"></div><button class="step-del" onclick="deleteEquip(${i})">&times;</button></div>`;});
-    h+=`<button class="btn-add-sm" onclick="addEquip()">+ Add Equipment</button></div>`;
-  }
-  h+=`<div style="margin-top:20px;display:flex;gap:10px;"><button class="btn-sm accent" onclick="saveGuideDetail('${k}')">Save</button><button class="btn-sm danger" onclick="deleteGuide('${k}')">Delete</button></div>`;
-  return h;
-}
-function selectGuide(k){state.selectedGuide=k;renderEditorBody();}
-function saveGuideDetail(k){
-  const g=state.guide[k];
-  g.title=document.getElementById('g-title')?.value||'';
-  g.body=document.getElementById('g-body')?.value||'';
-  const tagVal=document.getElementById('g-tag')?.value||'';if(tagVal)g.tag=tagVal;else delete g.tag;
-  if(g.steps)g.steps=g.steps.map((_,i)=>document.getElementById(`st-${i}`)?.value||'');
-  if(g.links)g.links=g.links.map((_,i)=>document.getElementById(`lk-${i}`)?.value||'').filter(Boolean);
-  if(g.equipment)g.equipment.forEach((eq,i)=>{eq.en=document.getElementById(`eq-${i}-en`)?.value||'';eq.q=document.getElementById(`eq-${i}-q`)?.value||'';});
-  markDirty();showToast(`Guide "${k}" saved.`);
-}
-function addStep(){const g=state.guide[state.selectedGuide];if(!g.steps)g.steps=[];g.steps.push('');markDirty();renderEditorBody();}
-function deleteStep(i){state.guide[state.selectedGuide].steps.splice(i,1);markDirty();renderEditorBody();}
-function addLink(){const g=state.guide[state.selectedGuide];if(!g.links)g.links=[];g.links.push('');markDirty();renderEditorBody();}
-function deleteLink(i){state.guide[state.selectedGuide].links.splice(i,1);markDirty();renderEditorBody();}
-function addEquip(){const g=state.guide[state.selectedGuide];if(!g.equipment)g.equipment=[];g.equipment.push({en:'',q:''});markDirty();renderEditorBody();}
-function deleteEquip(i){state.guide[state.selectedGuide].equipment.splice(i,1);markDirty();renderEditorBody();}
-function addNewGuide(){
-  const key=prompt('Enter new guide key:');if(!key)return;
-  if(state.guide[key]){alert('That key already exists.');return;}
-  state.guide[key]={title:'',body:'',steps:[],tag:'coming'};state.selectedGuide=key;markDirty();renderEditorBody();
-}
-function deleteGuide(k){if(!confirm(`Delete "${k}"?`))return;delete state.guide[k];state.selectedGuide=null;markDirty();renderEditorBody();}
 
 // ═══════════════════════════════════════
 //  SAVE / RESET
 // ═══════════════════════════════════════
 function saveAll(){
-  saveToStorage('maker_lab_staff_tasks',state.tasks);
-  saveToStorage('maker_lab_staff_guide',state.guide);
-  saveToStorage('maker_lab_staff_menu',state.menu);
-  state.dirty=false;saveAllBtn.classList.remove('dirty');showToast('All changes saved!');
+  saveAllData();showToast('All changes saved!');
 }
 async function resetAll(){
   if(!confirm('Reset ALL data to defaults?'))return;
@@ -794,13 +825,13 @@ async function resetAll(){
   state.guide=JSON.parse(JSON.stringify(DEFAULT_GUIDE));
   state.menu=JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU));
   state.editingTaskId=null;state.selectedSubItem=null;pendingMenuPdf=null;menuSubMode=null;
-  markDirty();renderLeftPanel();renderEditorBody();showToast('Reset. Click Save All to persist.');
+  clearDirty();renderLeftPanel();renderDashboard();showToast('Reset to defaults.');
 }
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveAll();}});
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
 window.addEventListener('storage',e=>{if(e.key==='maker_lab_signoffs'){loadSignoffs();renderLeftPanel();}});
 
-switchEditorTab('menu');
+renderDashboard();
 renderLeftPanel();
 // ── MagicBento: border glow + spotlight + ripple ──
 (function(){
