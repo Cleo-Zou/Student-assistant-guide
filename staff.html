@@ -133,6 +133,15 @@
   .editor-body::-webkit-scrollbar { width:5px; }
   .editor-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08);border-radius:4px; }
 
+  /* Welcome card */
+  .welcome-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 20px; text-align:center; }
+  .welcome-card h2 { font-size:20px; font-weight:700; margin-bottom:6px; }
+  .welcome-card h2 .nebula {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #3b82f6, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .welcome-card p { color:#ffffff; font-size:14px; }
+
   /* Dashboard 2x2 card grid */
   .dashboard-grid { display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(280px,1fr);gap:20px;min-height:100%; }
   .dash-card { background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 20px 18px;display:flex;flex-direction:column;cursor:default;transition:all .15s;overflow:hidden; }
@@ -552,7 +561,11 @@ let menuSubMode=null; // 'pdf' | 'guide' | null
 // ── Dashboard view ──
 function renderDashboard(){
   state.selectedSubItem=null;state.editingCategory=null;menuSubMode=null;pendingMenuPdf=null;
-  let h=`<div class="dashboard-grid">`;
+  let h=`<div class="welcome-card glow-card" style="margin-bottom:20px;">
+    <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
+    <p>Hello Staffs! Manage equipment and guides below.</p>
+  </div>
+  <div class="dashboard-grid">`;
   state.menu.forEach((m,mi)=>{
     h+=`<div class="dash-card glow-card">
       <div class="dc-title" onclick="event.stopPropagation();openCardEditor(${mi})" title="Click to edit card">${m.title}</div>

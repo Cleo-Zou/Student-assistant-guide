@@ -63,8 +63,8 @@
   .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .dot-print { background: var(--accent); } .dot-laser { background: var(--warning); } .dot-general { background: var(--text-muted); }
   .cl-item {
-    display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px;
-    border-radius: 6px; font-size: 13px; cursor: pointer; transition: background .12s; line-height: 1.5;
+    padding: 12px 14px; border-radius: 6px; cursor: pointer; transition: all .12s;
+    display: flex; align-items: flex-start; gap: 10px; border: 1px solid transparent;
   }
   .cl-item:hover { background: var(--card-hover); }
 
@@ -84,16 +84,15 @@
     background: rgba(59,130,246,0.22);
   }
   .cl-check {
-    width:20px; height:20px; border-radius:50%; border:2px solid var(--border);
-    flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;
-    font-size:11px; transition:all .15s; color:transparent;
+    width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;color:transparent;
   }
-  .cl-text { flex:1; min-width:0; }
-  .cl-title { font-weight:600; }
+  .cl-text { flex:1; min-width: 0; font-size: 14px; line-height: 1.55; }
+  .cl-title { font-weight:400; }
   .cl-item.done .cl-check { background:var(--success); border-color:var(--success); color:#fff; }
   .cl-item.done .cl-title { color:var(--text-muted); text-decoration:line-through; }
-  .cl-signoffs { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
-  .cl-signoff-chip { font-size:10px; padding:2px 8px; border-radius:10px; background:rgba(34,197,94,0.12); color:var(--success); font-weight:600; }
+  .cl-signoffs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .cl-signoff-chip { font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text-muted);font-weight:500; }
   .left-footer { padding:10px 18px; border-top:1px solid var(--border); flex-shrink:0; font-size:11px; color:var(--text-muted); text-align:center; }
 
   /* Name signoff modal */
@@ -301,11 +300,11 @@
     <button class="icon-btn" onclick="clearChat()">Clear</button>
   </div>
   <div class="chat-container" id="chatContainer">
-    <div class="sticky-menu-bar" id="presetGrid"></div>
     <div class="welcome-card glow-card" id="welcomeCard">
       <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
       <p>Hello <span style="color:#ffffff;font-weight:600;">Student Assistants</span>! Select tasks below.</p>
     </div>
+    <div class="sticky-menu-bar" id="presetGrid"></div>
   </div>
 </div>
 
