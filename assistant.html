@@ -122,7 +122,7 @@
   .icon-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(139,92,246,0.25); background:transparent; color:#d4d4d8; font-family:inherit; transition:all .15s; }
   .icon-btn:hover { background:rgba(139,92,246,0.08); color:#ffffff; border-color:rgba(139,92,246,0.6); }
 
-  .chat-container { flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
+  .chat-container { flex:1; min-height:0; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
   .chat-container::-webkit-scrollbar { width:5px; }
   .chat-container::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:4px; }
 
@@ -145,14 +145,15 @@
 
   /* ── Sticky menu bar with hover-reveal sub-items ── */
   .sticky-menu-bar {
-    position: sticky; top: 0; z-index: 10;
+    position: relative; z-index: 10; flex:none;
     display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
-    background: var(--bg); padding: 6px 0 10px;
+    background: var(--bg); padding: 0;
   }
   .sticky-menu-section {
     position: relative;
     background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 16px 14px; text-align: center; cursor: default;
+    padding: 22px 18px; text-align: center; cursor: default; min-width:0;
+    display:flex; flex-direction:column; align-items:center;
     transition: border-color 0.25s, box-shadow 0.25s;
   }
   .sticky-menu-section:hover {
@@ -160,19 +161,23 @@
     box-shadow: 0 0 20px rgba(59,130,246,0.08);
   }
   .sticky-menu-section .ms-title {
-    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .sticky-menu-section .ms-image {
+    width:100%; height:220px; flex:none; margin:16px 0 12px; border-radius:8px;
+    object-fit:cover; display:block; border:1px solid var(--border);
   }
   .sticky-menu-section .ms-sub {
-    font-size: 11px; color: var(--text-muted); margin-top: 2px;
+    font-size: 13px; color: var(--text-muted); margin-top: 2px;
   }
   .sticky-menu-section .ms-items-dropdown {
-    position: fixed;
+    position: absolute; left:18px; right:18px; bottom:18px;
     background: var(--surface); border: 1px solid var(--border-hover); border-radius: 0 0 var(--radius) var(--radius);
     padding: 8px; display: flex; flex-direction: column; gap: 4px;
     opacity: 0; visibility: hidden; transform: translateY(-4px);
     transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
     box-shadow: 0 12px 32px rgba(0,0,0,0.5); z-index: 200;
-    pointer-events: none; min-width: 140px;
+    pointer-events: none; min-width: 0;
   }
   .sticky-menu-section:hover .ms-items-dropdown,
   .sticky-menu-section .ms-items-dropdown.show {
@@ -217,8 +222,9 @@
     .left-panel { width:100%; min-width:0; max-height:40vh; border-right:none; border-bottom:1px solid var(--border); }
     .right-panel { height:auto; flex:1; }
     .main-menu { grid-template-columns:1fr; }
-    .sticky-menu-bar { grid-template-columns:1fr; }
-    .sticky-menu-section .ms-items-dropdown { position: relative; box-shadow: none; }
+    .sticky-menu-bar { grid-template-columns:1fr; flex:none; }
+    .sticky-menu-section .ms-image { height:200px; }
+    .sticky-menu-section .ms-items-dropdown { position:absolute; box-shadow:0 12px 32px rgba(0,0,0,0.5); }
     .chat-container { padding:14px; }
     .bubble { max-width:90%; }
   }
@@ -565,44 +571,42 @@ const DEFAULT_MAIN_MENU = [
 // ═══════════════════════════════════════
 //  LOAD FROM STORAGE
 // ═══════════════════════════════════════
-const SYNC_URL = 'http://192.168.50.2:3456';
-async function syncLoad(key, fallback) {
-  try {
-    const res = await fetch(`${SYNC_URL}/api/data/${key}`);
-    if (res.ok) { const d = await res.json(); if (d) return d; }
-  } catch (e) { }
-  try { const r = localStorage.getItem('maker_lab_' + key); if (r) return JSON.parse(r); } catch (e) { }
-  return JSON.parse(JSON.stringify(fallback));
-}
-function syncSave(key, data) {
-  localStorage.setItem('maker_lab_' + key, JSON.stringify(data));
-  fetch(`${SYNC_URL}/api/data/${key}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
-  }).catch(() => {});
+function loadTasks() { try { const c=localStorage.getItem('maker_lab_staff_tasks'); if(c) return JSON.parse(c); } catch(e){} return DEFAULT_TASKS; }
+function loadGuide() { try { const c=localStorage.getItem('maker_lab_staff_guide'); if(c) return JSON.parse(c); } catch(e){} return DEFAULT_GUIDE; }
+function loadMenu() { try { const c=localStorage.getItem('maker_lab_staff_menu'); if(c) return JSON.parse(c); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU)); }
+
+// Older local data links non-PDF menu items to DEFAULT_GUIDE through `q`.
+// Hydrate those links into inline guides so every non-PDF item has complete,
+// editable guide content and uses the same rendering path as newly added guides.
+function hydrateMenuGuides(menu, guides) {
+  menu = menu.filter(section => !/example/i.test(section.id || '') && !/example/i.test(section.title || ''));
+  menu.forEach(section => (section.subs || []).forEach(item => {
+    const hasPdf = item.pdf || item.pdfId;
+    if (!hasPdf && !item.guide) {
+      item.guide = item.q && guides[item.q]
+        ? JSON.parse(JSON.stringify(guides[item.q]))
+        : {
+            title: (item.en || 'Task') + ' Guide',
+            body: 'Follow the steps below and ask the lab staff if anything is unclear.',
+            steps: ['Prepare the required area and equipment', 'Complete the task safely', 'Clean up and report any issue']
+          };
+    }
+  }));
+  return menu;
 }
 
-let TASKS = DEFAULT_TASKS;
-let GUIDE = DEFAULT_GUIDE;
-let MAIN_MENU = JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU));
+let TASKS = loadTasks();
+let GUIDE = loadGuide();
+let MAIN_MENU = hydrateMenuGuides(loadMenu(), GUIDE);
 
 // ═══════════════════════════════════════
 //  SIGNOFFS
 // ═══════════════════════════════════════
 let signoffs = {};
-async function loadSignoffs() {
-  try {
-    const res = await fetch(`${SYNC_URL}/api/data/signoffs`);
-    if (res.ok) { const d = await res.json(); if (d) { signoffs = d; return; } }
-  } catch (e) { }
-  try { const r = localStorage.getItem('maker_lab_signoffs'); if (r) signoffs = JSON.parse(r); } catch (e) { signoffs = {}; }
-}
-function saveSignoffs() {
-  localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs));
-  fetch(`${SYNC_URL}/api/data/signoffs`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(signoffs)
-  }).catch(() => {});
-}
+function loadSignoffs() { try { const r=localStorage.getItem('maker_lab_signoffs'); if(r) signoffs=JSON.parse(r); } catch(e) { signoffs={}; } }
+function saveSignoffs() { localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs)); }
 function getSignoffs(id) { return signoffs[id] || []; }
+loadSignoffs();
 
 // ═══════════════════════════════════════
 //  IndexedDB helpers for PDF uploads
@@ -657,6 +661,13 @@ function renderLeftPanel() {
 // ═══════════════════════════════════════
 let pendingSignoffId = null;
 function openSignoff(id) {
+  if (getSignoffs(id).length) {
+    delete signoffs[id];
+    saveSignoffs();
+    renderLeftPanel();
+    showToast('Check-in cancelled.');
+    return;
+  }
   pendingSignoffId = id;
   const t = TASKS.find(x => x.id === id);
   document.getElementById('signoffTaskPreview').textContent = t ? t.en : id;
@@ -685,9 +696,16 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') closeSignoff()
 //  RIGHT PANEL — Main Menu
 // ═══════════════════════════════════════
 function renderMainMenu() {
+  MAIN_MENU = MAIN_MENU.filter(section => !/example/i.test(section.id || '') && !/example/i.test(section.title || ''));
+  const menuImages={
+    '3dprint':'pic/printer.png',
+    'laser':'pic/cutter.png',
+    'tools':'pic/toolcabinet.png'
+  };
   presetEl.innerHTML = MAIN_MENU.map(m => `
     <div class="sticky-menu-section glow-card">
       <div class="ms-title">${m.title}</div>
+      <img class="ms-image" src="${menuImages[m.id]||''}" alt="${escapeHtml(m.title)}">
       <div class="ms-sub">${m.subtitle}</div>
       <div class="ms-items-dropdown">
         ${m.subs.map(s => {
@@ -865,52 +883,19 @@ function showToast(msg) {
 }
 
 // ═══════════════════════════════════════
-//  POLL SERVER for changes (every 3s)
+//  STORAGE EVENTS (cross-tab sync)
 // ═══════════════════════════════════════
-setInterval(async () => {
-  try {
-    const r1 = await fetch(`${SYNC_URL}/api/data/tasks`);
-    if (r1.ok) { const d = await r1.json(); if (d) { TASKS = d; renderLeftPanel(); } }
-    const r2 = await fetch(`${SYNC_URL}/api/data/menu`);
-    if (r2.ok) { const d = await r2.json(); if (d) { MAIN_MENU = d; renderMainMenu(); } }
-    const r3 = await fetch(`${SYNC_URL}/api/data/signoffs`);
-    if (r3.ok) { const d = await r3.json(); if (d) { signoffs = d; renderLeftPanel(); } }
-  } catch (e) { }
-}, 3000);
+window.addEventListener('storage', function(e) {
+  if (e.key === 'maker_lab_staff_tasks') { TASKS = loadTasks(); renderLeftPanel(); }
+  if (e.key === 'maker_lab_staff_guide') { GUIDE = loadGuide(); }
+  if (e.key === 'maker_lab_staff_menu') { MAIN_MENU = hydrateMenuGuides(loadMenu(), GUIDE); renderMainMenu(); }
+});
 
 // ═══════════════════════════════════════
-//  INIT — load from server then render
+//  INIT
 // ═══════════════════════════════════════
-(async function init() {
-  const [tasks, menu] = await Promise.all([
-    syncLoad('tasks', DEFAULT_TASKS),
-    syncLoad('menu', DEFAULT_MAIN_MENU)
-  ]);
-  TASKS = tasks; MAIN_MENU = menu;
-  const guide = await syncLoad('guide', DEFAULT_GUIDE);
-  GUIDE = guide;
-  await loadSignoffs();
-  renderLeftPanel();
-  renderMainMenu();
-})();
-
-// ── Position sticky-menu dropdowns on hover (fixed, not clipped by overflow) ──
-(function() {
-  document.querySelectorAll('.sticky-menu-section').forEach(section => {
-    const dropdown = section.querySelector('.ms-items-dropdown');
-    if (!dropdown) return;
-    section.addEventListener('mouseenter', () => {
-      const r = section.getBoundingClientRect();
-      dropdown.style.left = r.left + 'px';
-      dropdown.style.top = r.bottom + 'px';
-      dropdown.style.width = r.width + 'px';
-      dropdown.classList.add('show');
-    });
-    section.addEventListener('mouseleave', () => {
-      dropdown.classList.remove('show');
-    });
-  });
-})();
+renderLeftPanel();
+renderMainMenu();
 
 // ── MagicBento: border glow + spotlight + ripple ──
 (function(){

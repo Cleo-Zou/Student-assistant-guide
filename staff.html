@@ -409,28 +409,6 @@ const DEFAULT_MAIN_MENU = [
   ]},
 ];
 
-// ── Sync layer: server first, localStorage fallback ──
-const SYNC_URL = 'http://192.168.50.2:3456';
-async function syncLoad(key, fallback) {
-  try {
-    const res = await fetch(`${SYNC_URL}/api/data/${key}`);
-    if (res.ok) { const d = await res.json(); if (d) return d; }
-  } catch (e) { /* server not available, use localStorage */ }
-  try { const r = localStorage.getItem('maker_lab_' + key); if (r) return JSON.parse(r); } catch (e) { }
-  return JSON.parse(JSON.stringify(fallback));
-}
-function syncSave(key, data) {
-  localStorage.setItem('maker_lab_' + key, JSON.stringify(data));
-  fetch(`${SYNC_URL}/api/data/${key}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
-  }).catch(() => {});
-}
-async function syncLoadAll(tasksDefault, guideDefault, menuDefault) {
-  const [tasks, guide, menu] = await Promise.all([
-    syncLoad('tasks', tasksDefault), syncLoad('guide', guideDefault), syncLoad('menu', menuDefault)
-  ]);
-  return { tasks, guide, menu };
-}
 function loadFromStorage(key, fallback) { try{const r=localStorage.getItem(key);if(r)return JSON.parse(r);}catch(e){} return JSON.parse(JSON.stringify(fallback)); }
 function saveToStorage(key, data) { try{localStorage.setItem(key,JSON.stringify(data));return true;}catch(e){return false;} }
 
@@ -449,27 +427,43 @@ function loadGuide() {
   return g;
 }
 
+// Convert legacy `q` links into inline guides. This also repairs menu data
+// already saved in localStorage before the Guide/PDF editor was introduced.
+function hydrateMenuGuides(menu, guides) {
+  menu = menu.filter(section => !/example/i.test(section.id || '') && !/example/i.test(section.title || ''));
+  menu.forEach(section => (section.subs || []).forEach(item => {
+    const hasPdf = item.pdf || item.pdfId;
+    if (!hasPdf && !item.guide) {
+      item.guide = item.q && guides[item.q]
+        ? JSON.parse(JSON.stringify(guides[item.q]))
+        : {
+            title: (item.en || 'Task') + ' Guide',
+            body: 'Follow the steps below and ask the lab staff if anything is unclear.',
+            steps: ['Prepare the required area and equipment', 'Complete the task safely', 'Clean up and report any issue']
+          };
+    }
+  }));
+  return menu;
+}
+
+const INITIAL_GUIDE = loadGuide();
+const INITIAL_MENU = hydrateMenuGuides(
+  loadFromStorage('maker_lab_staff_menu', DEFAULT_MAIN_MENU),
+  INITIAL_GUIDE
+);
+// Persist the cleanup so legacy Example cards do not return on the next load.
+saveToStorage('maker_lab_staff_menu', INITIAL_MENU);
+
 let state = {
-  tasks: JSON.parse(JSON.stringify(DEFAULT_TASKS)),
-  guide: JSON.parse(JSON.stringify(DEFAULT_GUIDE)),
-  menu: JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU)),
+  tasks: loadFromStorage('maker_lab_staff_tasks', DEFAULT_TASKS),
+  guide: INITIAL_GUIDE,
+  menu: INITIAL_MENU,
   editorTab: 'menu', selectedGuide: null, selectedSubItem: null, editingTaskId: null, dirty: false,
 };
 
 let signoffs = {};
-async function loadSignoffs() {
-  try {
-    const res = await fetch(`${SYNC_URL}/api/data/signoffs`);
-    if (res.ok) { const d = await res.json(); if (d) { signoffs = d; return; } }
-  } catch (e) { }
-  try { const r = localStorage.getItem('maker_lab_signoffs'); if (r) signoffs = JSON.parse(r); } catch (e) { signoffs = {}; }
-}
-function saveSignoffs() {
-  localStorage.setItem('maker_lab_signoffs', JSON.stringify(signoffs));
-  fetch(`${SYNC_URL}/api/data/signoffs`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(signoffs)
-  }).catch(() => {});
-}
+function loadSignoffs() { try{const r=localStorage.getItem('maker_lab_signoffs');if(r)signoffs=JSON.parse(r);}catch(e){signoffs={};} }
+loadSignoffs();
 
 // ═══════════════════════════════════════
 //  IndexedDB helpers for PDF uploads
@@ -525,9 +519,9 @@ function showToast(msg) {
 }
 function markDirty(){state.dirty=true;saveAllBtn.classList.add('dirty');}
 function clearDirty(){state.dirty=false;saveAllBtn.classList.remove('dirty');}
-function saveMenuData(){syncSave('menu',state.menu);clearDirty();}
-function saveTasksData(){syncSave('tasks',state.tasks);clearDirty();}
-function saveGuideData(){syncSave('guide',state.guide);clearDirty();}
+function saveMenuData(){saveToStorage('maker_lab_staff_menu',state.menu);clearDirty();}
+function saveTasksData(){saveToStorage('maker_lab_staff_tasks',state.tasks);clearDirty();}
+function saveGuideData(){saveToStorage('maker_lab_staff_guide',state.guide);clearDirty();}
 function saveAllData(){saveTasksData();saveGuideData();saveMenuData();}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function escAttr(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -589,11 +583,13 @@ function deleteTask(id){
 //  RIGHT PANEL — Dashboard + Editor
 // ═══════════════════════════════════════
 let pendingMenuPdf=null;
+let pendingMenuPdfRemoval=false;
 let menuSubMode=null; // 'pdf' | 'guide' | null
 
 // ── Dashboard view ──
 function renderDashboard(){
-  state.selectedSubItem=null;state.editingCategory=null;menuSubMode=null;pendingMenuPdf=null;
+  state.menu = state.menu.filter(section => !/example/i.test(section.id || '') && !/example/i.test(section.title || ''));
+  state.selectedSubItem=null;state.editingCategory=null;menuSubMode=null;pendingMenuPdf=null;pendingMenuPdfRemoval=false;
   let h=`<div class="welcome-card glow-card" style="margin-bottom:20px;">
     <h2>Welcome to <span class="nebula">IE Maker Lab</span></h2>
     <p>Hello Staffs! Manage equipment and guides below.</p>
@@ -654,7 +650,10 @@ function renderCardEditor(){
 }
 function addCardSub(){
   const mi=state.editingCategory;
-  state.menu[mi].subs.push({en:'New Task'});
+  state.menu[mi].subs.push({
+    en:'New Task',
+    guide:{title:'New Task Guide',body:'Add the instructions for this task.',steps:['Prepare the required area and equipment','Complete the task safely','Clean up and report any issue']}
+  });
   markDirty();renderCardEditor();
 }
 function deleteCardSub(si){
@@ -682,12 +681,12 @@ function deleteCard(mi){
 
 // ── Sub-Item Editor (full page) ──
 function openSubItemEditor(mi,si){
-  state.selectedSubItem={mi,si};state.editingCategory=null;pendingMenuPdf=null;menuSubMode=null;
+  state.selectedSubItem={mi,si};state.editingCategory=null;pendingMenuPdf=null;pendingMenuPdfRemoval=false;menuSubMode=null;
   renderSubItemEditor();
 }
 function renderSubItemEditor(){
   const {mi,si}=state.selectedSubItem,s=state.menu[mi].subs[si];
-  if(menuSubMode===null) menuSubMode=(s.guide&&!s.pdfId)?'guide':'pdf';
+  if(menuSubMode===null) menuSubMode=(s.guide&&!s.pdfId&&!s.pdf)?'guide':'pdf';
   const isGuide=menuSubMode==='guide';
   let h=`<button class="back-link" onclick="renderDashboard()">&larr; Back to Dashboard</button>
   <div style="padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);max-width:700px;">
@@ -701,8 +700,8 @@ function renderSubItemEditor(){
     <div id="sub-pdf-section" style="${isGuide?'display:none;':''}">
       <div class="pdf-upload-box" id="pdfUploadBox" onclick="document.getElementById('pdfFileInput').click()">
         <span id="pdfUploadIcon">&#128206;</span>
-        <span id="pdfUploadText">${s.pdfId?esc(s.pdfName||''):(s.pdf?esc(s.pdf):'Choose File')}</span>
-        <span id="pdfUploadClose" style="${s.pdfId||s.pdf?'':'display:none;'}position:absolute;top:4px;right:10px;cursor:pointer;color:#ef4444;font-size:18px;font-weight:700;line-height:1;" onclick="event.stopPropagation();clearMenuPdf()">&times;</span>
+        <span id="pdfUploadText">${pendingMenuPdf?esc(pendingMenuPdf.name):(!pendingMenuPdfRemoval&&s.pdfId?esc(s.pdfName||''):(!pendingMenuPdfRemoval&&s.pdf?esc(s.pdf):'Choose File'))}</span>
+        <span id="pdfUploadClose" style="${pendingMenuPdf||(!pendingMenuPdfRemoval&&(s.pdfId||s.pdf))?'':'display:none;'}position:absolute;top:4px;right:10px;cursor:pointer;color:#ef4444;font-size:18px;font-weight:700;line-height:1;" onclick="event.stopPropagation();clearMenuPdf()">&times;</span>
         <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handleMenuPdfSelect()">
       </div>
     </div>
@@ -759,9 +758,9 @@ function saveNewEquipment(){
   const id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const subs=[];
   document.querySelectorAll('#ne-tasks input').forEach(inp=>{
-    const v=inp.value.trim();if(v)subs.push({en:v});
+    const v=inp.value.trim();if(v)subs.push({en:v,guide:{title:v+' Guide',body:'Follow the steps below and ask the lab staff if anything is unclear.',steps:['Prepare the required area and equipment','Complete the task safely','Clean up and report any issue']}});
   });
-  if(!subs.length)subs.push({en:'Use '+title});
+  if(!subs.length){const task='Use '+title;subs.push({en:task,guide:{title:task+' Guide',body:'Follow the steps below and ask the lab staff if anything is unclear.',steps:['Prepare the required area and equipment','Complete the task safely','Clean up and report any issue']}});}
   state.menu.push({id,title:title.toUpperCase(),subtitle,subs});
   saveMenuData();showToast('New equipment saved.');
   renderDashboard();
@@ -769,13 +768,11 @@ function saveNewEquipment(){
 
 // ── Menu PDF / Guide mode ──
 function switchSubMode(mode){
+  // Preserve the visible Guide form before changing tabs. Switching tabs is
+  // only a preview action; destructive changes happen exclusively on Save.
+  if(menuSubMode==='guide')syncMenuFormToState();
   menuSubMode=mode;
-  if(state.selectedSubItem){
-    var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];
-    if(mode==='pdf'){ delete s.guide; pendingMenuPdf=null; }
-    else{ if(s.pdfId){s._oldPdfId=s.pdfId;} delete s.pdfId;delete s.pdfName;delete s.pdf; pendingMenuPdf=null; }
-  }
-  markDirty();renderSubItemEditor();
+  renderSubItemEditor();
 }
 
 // ── Menu PDF Upload ──
@@ -785,12 +782,12 @@ function handleMenuPdfSelect(){
   if(file.type!=='application/pdf'){showToast('Please select a PDF file.');input.value='';return;}
   if(file.size>50*1024*1024){showToast('File too large. Maximum size is 50MB.');input.value='';return;}
   pendingMenuPdf={id:generatePdfId(),name:file.name,blob:file,size:file.size};
+  pendingMenuPdfRemoval=false;
   var text=document.getElementById('pdfUploadText');var close=document.getElementById('pdfUploadClose');
   if(text)text.textContent=file.name;if(close)close.style.display='';markDirty();
 }
 function clearMenuPdf(){
-  if(state.selectedSubItem){var s=state.menu[state.selectedSubItem.mi].subs[state.selectedSubItem.si];if(s.pdfId){s._oldPdfId=s.pdfId;}delete s.pdfId;delete s.pdfName;delete s.pdf;}
-  pendingMenuPdf=null;renderSubItemEditor();markDirty();
+  pendingMenuPdf=null;pendingMenuPdfRemoval=true;renderSubItemEditor();markDirty();
 }
 
 // ── Menu Guide Steps ──
@@ -835,12 +832,17 @@ async function saveSubItem(){
   }else{
     delete s.guide;
     if(s._oldPdfId){try{await idbDelete(s._oldPdfId);}catch(e){} delete s._oldPdfId;}
+    if(pendingMenuPdfRemoval){
+      if(s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
+      delete s.pdfId;delete s.pdfName;delete s.pdf;
+      pendingMenuPdfRemoval=false;
+    }
     if(pendingMenuPdf){
       if(s.pdfId){try{await idbDelete(s.pdfId);}catch(e){}}
       try{
         await idbStore(pendingMenuPdf.id,pendingMenuPdf.name,pendingMenuPdf.blob,pendingMenuPdf.size);
         delete s.pdf;s.pdfId=pendingMenuPdf.id;s.pdfName=pendingMenuPdf.name;
-        pendingMenuPdf=null;
+        pendingMenuPdf=null;pendingMenuPdfRemoval=false;
       }catch(e){showToast('Failed to store PDF: '+e.message);return;}
     }
   }
@@ -869,34 +871,16 @@ async function resetAll(){
   try{const db=await idbOpen();const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).clear();db.close();}catch(e){}
   state.tasks=JSON.parse(JSON.stringify(DEFAULT_TASKS));
   state.guide=JSON.parse(JSON.stringify(DEFAULT_GUIDE));
-  state.menu=JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU));
+  state.menu=hydrateMenuGuides(JSON.parse(JSON.stringify(DEFAULT_MAIN_MENU)),state.guide);
   state.editingTaskId=null;state.selectedSubItem=null;pendingMenuPdf=null;menuSubMode=null;
   clearDirty();renderLeftPanel();renderDashboard();showToast('Reset to defaults.');
 }
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveAll();}});
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
-// Poll server for changes every 3 seconds (lightweight, no page reload)
-setInterval(async () => {
-  try {
-    const res = await fetch(`${SYNC_URL}/api/data/tasks`);
-    if (res.ok) { const tasks = await res.json(); if (tasks) { state.tasks = tasks; renderLeftPanel(); } }
-    const r2 = await fetch(`${SYNC_URL}/api/data/signoffs`);
-    if (r2.ok) { const s = await r2.json(); if (s) { signoffs = s; renderLeftPanel(); } }
-  } catch (e) { }
-}, 3000);
+window.addEventListener('storage',e=>{if(e.key==='maker_lab_signoffs'){loadSignoffs();renderLeftPanel();}});
 
-// Init: load from server, then render
-(async function init() {
-  const [tasks, guide, menu] = await Promise.all([
-    syncLoad('tasks', DEFAULT_TASKS),
-    syncLoad('guide', DEFAULT_GUIDE),
-    syncLoad('menu', DEFAULT_MAIN_MENU)
-  ]);
-  state.tasks = tasks; state.guide = guide; state.menu = menu;
-  await loadSignoffs();
-  renderDashboard();
-  renderLeftPanel();
-})();
+renderDashboard();
+renderLeftPanel();
 // ── MagicBento: border glow + spotlight + ripple ──
 (function(){
   const GLOW_RGB = '132,0,255';
